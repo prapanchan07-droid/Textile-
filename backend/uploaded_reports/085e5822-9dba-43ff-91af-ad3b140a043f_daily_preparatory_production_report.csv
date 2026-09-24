@@ -1,0 +1,10 @@
+Date,Department,Shift,Target,Actual Production,Loss,Remarks
+2026-08-14,Carding,Shift I,12460,11150,1310,Machine Downtime
+2026-08-14,Carding,Shift II,12460,11361,1099,Machine Downtime
+2026-08-14,Carding,Shift III,12959,11408,1551,Efficiency Loss
+2026-08-14,Draw Frame,Shift I,12714,11468,1246,Machine Downtime
+2026-08-14,Draw Frame,Shift II,12714,10133,2581,Machine Downtime
+2026-08-14,Draw Frame,Shift III,12714,11939,775,Efficiency Loss
+2026-08-14,Simplex,Shift I,2840,2352,488,Machine Downtime
+2026-08-14,Simplex,Shift II,2840,2468,372,Machine Downtime
+2026-08-14,Simplex,Shift III,2840,1488,1352,Efficiency Loss

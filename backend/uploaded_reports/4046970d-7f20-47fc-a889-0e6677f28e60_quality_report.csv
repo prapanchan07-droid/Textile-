@@ -1,0 +1,4 @@
+Date,Shift,Yarn Count,Quality Score,Defect Rate,Warp Breaks,Weft Breaks
+2026-08-14,Shift I,40s Ne,98.5,0.4,3,1
+2026-08-14,Shift II,40s Ne,96.2,0.8,6,2
+2026-08-14,Shift III,40s Ne,97.8,0.5,4,1

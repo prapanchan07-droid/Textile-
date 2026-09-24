@@ -1,0 +1,4 @@
+Date,Shift,Department,Target @ 22.5 Hrs,Actual Production,Loss,Machine No,Remarks
+2026-08-14,Shift I,Preparatory,12940,12450,490,V-01,Machine Downtime
+2026-08-14,Shift II,Preparatory,11910,10890,1020,V-05,Machine Downtime
+2026-08-14,Shift III,Preparatory,12150,11280,870,V-09,Efficiency Loss
