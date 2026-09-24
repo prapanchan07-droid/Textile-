@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MachineComparisonResponse } from '../types/machineComparison';
 import { machineComparisonService } from '../services/machineComparisonService';
 
@@ -10,12 +10,13 @@ import { ComparisonInsight } from '../components/comparison/ComparisonInsight';
 import { Loader2, BarChart2, PlusCircle } from 'lucide-react';
 
 export const MachineComparisonPage: React.FC = () => {
-  const [selectedIds, setSelectedIds] = useState<string[]>(['V-09', 'V-05', 'V-12']);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedMachineType, setSelectedMachineType] = useState<string>('ALL');
   const [selectedMetric, setSelectedMetric] = useState<string>('EFFICIENCY');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('TODAY');
   const [selectedReference, setSelectedReference] = useState<string>('FACTORY_AVG');
 
+  const initialised = useRef<boolean>(false);
   const [data, setData] = useState<MachineComparisonResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,15 @@ export const MachineComparisonPage: React.FC = () => {
         selectedReference
       );
       setData(res);
+      // First load, or the selection no longer exists in the data: adopt the machines the backend resolved
+      const known = new Set(res.all_master_machines.map((m) => m.machine_id));
+      if (!initialised.current || selectedIds.some((id) => !known.has(id))) {
+        initialised.current = true;
+        const resolved = res.selected_machine_ids;
+        if (resolved.length !== selectedIds.length || resolved.some((id, i) => id !== selectedIds[i])) {
+          setSelectedIds(resolved);
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load machine comparison data.');
     } finally {

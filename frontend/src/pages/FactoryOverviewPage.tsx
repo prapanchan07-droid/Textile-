@@ -24,7 +24,8 @@ export const FactoryOverviewPage: React.FC<FactoryOverviewPageProps> = ({
   onRetry,
 }) => {
   const handleViewDetails = () => {
-    alert("Machine V-09 detailed downtime telemetry will open when Module 08 (Machines & Downtime) is built.");
+    const top = data?.machines_requiring_attention[0];
+    alert(`Open the Machines & Downtime page to review ${top ? `machine ${top.machine_id}` : 'machine'} downtime telemetry.`);
   };
 
   if (loading) {
@@ -69,19 +70,22 @@ export const FactoryOverviewPage: React.FC<FactoryOverviewPageProps> = ({
           totalLossKg={data.production_summary.loss_kg}
         />
         <ComparedWithYesterdaySection
-          yesterdayKg={36100}
+          metrics={data.period_comparison}
           todayKg={data.production_summary.actual_kg}
+          comparison={data.selected_comparison}
         />
       </div>
 
       {/* 4. MACHINE NEEDING ATTENTION */}
       <MachineNeedingAttentionSection
         machines={data.machines_requiring_attention}
+        factoryAvgPct={data.low_efficiency_spotlight.factory_avg_pct}
         onViewMachineDetails={handleViewDetails}
       />
 
       {/* 5. AI RECOMMENDATION (WHAT SHOULD I DO?) */}
       <AiRecommendationSection
+        data={data}
         onViewDetails={handleViewDetails}
       />
 

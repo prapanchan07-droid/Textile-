@@ -126,6 +126,22 @@ export const ingestionService = {
     throw new Error(response.data.error?.message || 'Upload failed.');
   },
 
+  /** Downloads the Excel data template (optionally pre-filled with sample data) and saves it in the browser. */
+  async downloadTemplate(sample: boolean = false): Promise<void> {
+    const response = await apiClient.get('/ingestion/template', {
+      params: { sample },
+      responseType: 'blob',
+    });
+    const url = window.URL.createObjectURL(response.data as Blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = sample ? 'factory_data_sample.xlsx' : 'factory_data_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
   async getUploadHistory(): Promise<ReportHistoryItem[]> {
     try {
       const response = await apiClient.get<StandardResponse<ReportHistoryItem[]>>('/ingestion/history');

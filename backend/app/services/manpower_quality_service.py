@@ -1,4 +1,7 @@
 from typing import List, Optional
+from app.db.session import SessionLocal
+from app.services.template.factory_data import has_manpower_quality_data
+from app.services.template.manpower_quality_template import manpower_quality_from_template
 from app.schemas.manpower_quality import (
     ManpowerQualityModuleResponse,
     ManpowerSummary,
@@ -13,6 +16,17 @@ from app.schemas.manpower_quality import (
 class ManpowerQualityService:
     @staticmethod
     def get_manpower_quality_data(period: str = "THIS_MONTH") -> ManpowerQualityModuleResponse:
+        """Uses uploaded template data when present, otherwise the built-in synthetic data."""
+        db = SessionLocal()
+        try:
+            if has_manpower_quality_data(db):
+                return manpower_quality_from_template(db, period)
+        finally:
+            db.close()
+        return ManpowerQualityService._synthetic_manpower_quality_data(period)
+
+    @staticmethod
+    def _synthetic_manpower_quality_data(period: str = "THIS_MONTH") -> ManpowerQualityModuleResponse:
         # 1. Manpower Summary
         manpower_summary = ManpowerSummary(
             required=1250,

@@ -71,25 +71,24 @@ const DEFAULT_TREND_MAP: Record<string, MachineTrendPoint[]> = {
 
 export const MachineTrendSection: React.FC<MachineTrendSectionProps> = ({
   trend,
-  selectedMachineId = 'V-09',
+  selectedMachineId = 'ALL',
   onMachineIdChange,
   availableMachineIds,
   trendsById,
 }) => {
-  const [localMachineId, setLocalMachineId] = useState<string>(
-    selectedMachineId && selectedMachineId !== 'ALL' ? selectedMachineId : 'V-09'
-  );
+  const [pickedMachineId, setLocalMachineId] = useState<string>(selectedMachineId);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  // Machine options list: ALWAYS complete master list to ensure options never shrink
+  // Machine options come from the loaded data; the built-in list is only the offline fallback
   const machineOptions =
     availableMachineIds && availableMachineIds.filter((id) => id !== 'ALL').length > 0
-      ? Array.from(new Set([...availableMachineIds.filter((id) => id !== 'ALL'), ...ALL_MASTER_MACHINES]))
+      ? availableMachineIds.filter((id) => id !== 'ALL')
       : ALL_MASTER_MACHINES;
+  const localMachineId = machineOptions.includes(pickedMachineId) ? pickedMachineId : machineOptions[0];
 
   // Active trend data map
   const activeTrendMap = trendsById || DEFAULT_TREND_MAP;
-  const activePoints = activeTrendMap[localMachineId] || trend || DEFAULT_TREND_MAP['V-09'];
+  const activePoints = activeTrendMap[localMachineId] || trend || [];
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newId = e.target.value;

@@ -4,11 +4,13 @@ import { Card } from '../ui/Card';
 
 interface MachineNeedingAttentionSectionProps {
   machines: MachineAttentionItem[];
+  factoryAvgPct?: number;
   onViewMachineDetails?: () => void;
 }
 
 export const MachineNeedingAttentionSection: React.FC<MachineNeedingAttentionSectionProps> = ({
   machines,
+  factoryAvgPct,
   onViewMachineDetails,
 }) => {
   const topMachine = machines.length > 0 ? machines[0] : null;
@@ -22,7 +24,7 @@ export const MachineNeedingAttentionSection: React.FC<MachineNeedingAttentionSec
             4. MACHINE NEEDING ATTENTION
           </h2>
           <p className="text-sm font-bold text-slate-900 mt-0.5">
-            Top Problem Machine: <span className="text-rose-600 font-mono font-extrabold">{topMachine?.machine_id || 'V-09'}</span>
+            Top Problem Machine: <span className="text-rose-600 font-mono font-extrabold">{topMachine?.machine_id || 'N/A'}</span>
           </p>
         </div>
         <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg">
@@ -46,7 +48,7 @@ export const MachineNeedingAttentionSection: React.FC<MachineNeedingAttentionSec
             </div>
             <div className="bg-white p-2.5 rounded-lg border border-rose-200">
               <span className="text-[10px] text-slate-400 block uppercase font-sans">Factory Avg</span>
-              <span className="text-slate-900 font-extrabold text-sm">91.6%</span>
+              <span className="text-slate-900 font-extrabold text-sm">{factoryAvgPct !== undefined ? `${factoryAvgPct}%` : 'N/A'}</span>
             </div>
             <div className="bg-white p-2.5 rounded-lg border border-rose-200">
               <span className="text-[10px] text-slate-400 block uppercase font-sans">Downtime</span>
@@ -55,7 +57,7 @@ export const MachineNeedingAttentionSection: React.FC<MachineNeedingAttentionSec
           </div>
 
           <p className="text-xs text-slate-700 leading-relaxed pt-1">
-            <strong>Summary:</strong> V-09 has the highest observed production loss ({topMachine.loss_kg} kg) and lowest efficiency ({topMachine.efficiency_pct}%) among all machines analyzed today.
+            <strong>Summary:</strong> {topMachine.machine_id} has the highest observed production loss ({topMachine.loss_kg} kg) at {topMachine.efficiency_pct}% efficiency in the selected period.
           </p>
         </div>
       )}

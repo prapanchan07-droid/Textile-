@@ -22,6 +22,9 @@ export const App: React.FC = () => {
   const [userRole, setUserRole] = useState<string>('SUPER_ADMIN');
   const [sectionAccess, setSectionAccess] = useState<string>('ALL');
 
+  // Bumped after every successful upload so the visible page reloads its data
+  const [dataVersion, setDataVersion] = useState<number>(0);
+
   const [overviewData, setOverviewData] = useState<FactoryOverviewData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,13 +59,16 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     checkHealth();
+    const onReportUploaded = () => setDataVersion((v) => v + 1);
+    window.addEventListener('reportUploaded', onReportUploaded);
+    return () => window.removeEventListener('reportUploaded', onReportUploaded);
   }, []);
 
   useEffect(() => {
     if (activeTab === 'overview') {
       fetchOverviewData();
     }
-  }, [activeTab, period, comparison, unit, userRole, sectionAccess]);
+  }, [activeTab, period, comparison, unit, userRole, sectionAccess, dataVersion]);
 
   return (
     <AppShell
@@ -76,6 +82,7 @@ export const App: React.FC = () => {
       onUnitChange={setUnit}
       apiStatus={apiStatus}
     >
+      <React.Fragment key={dataVersion}>
       {activeTab === 'overview' ? (
         <FactoryOverviewPage
           data={overviewData}
@@ -107,6 +114,7 @@ export const App: React.FC = () => {
           </p>
         </div>
       )}
+      </React.Fragment>
     </AppShell>
   );
 };

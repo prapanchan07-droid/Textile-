@@ -16,6 +16,7 @@ from app.models.ingestion import (
 )
 from app.services.ingestion.extractor import Extractor
 from app.services.ingestion.normalizer import Normalizer
+from app.services.template.template_importer import TemplateImporter
 from app.core.logging import logger
 
 UPLOAD_STORAGE_DIR = "uploaded_reports"
@@ -97,7 +98,7 @@ class IngestionJobManager:
 
                 if res.get("status") == "SUCCESS":
                     file_status_entry["status"] = "SUCCESS"
-                    file_status_entry["message"] = "Report processed successfully."
+                    file_status_entry["message"] = res.get("message") or "Report processed successfully."
                     file_status_entry["report_type"] = res.get("final_report_type")
                     file_status_entry["report_date"] = res.get("report_date")
                     job["success_count"] += 1
@@ -164,6 +165,7 @@ class IngestionService:
 
         # If force replace, delete old report and cascading records
         if existing_report and force_replace:
+            TemplateImporter.purge_report(db, existing_report.id)
             db.delete(existing_report)
             db.commit()
 
@@ -173,6 +175,14 @@ class IngestionService:
         saved_filepath = os.path.join(UPLOAD_STORAGE_DIR, saved_filename)
         with open(saved_filepath, "wb") as f:
             f.write(file_bytes)
+
+        # Data template (downloaded from the app and filled in): import directly into every dashboard table
+        if os.path.splitext(filename)[1].lower() == ".xlsx" and TemplateImporter.is_template(saved_filepath):
+            try:
+                return TemplateImporter.import_file(db, file_id, file_hash, filename, saved_filepath)
+            except Exception:
+                db.rollback()
+                raise
 
         # Extract content
         records, sheet_names, extracted_date, extracted_unit = Extractor.extract_from_file(saved_filepath, filename)

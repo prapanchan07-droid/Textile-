@@ -1,4 +1,7 @@
 from typing import Optional
+from app.db.session import SessionLocal
+from app.services.template.factory_data import has_template_data
+from app.services.template.decision_template import decision_center_from_template
 from app.schemas.decision_center import (
     DecisionCenterData,
     TopPriorityData,
@@ -15,6 +18,23 @@ from app.schemas.decision_center import (
 class DecisionCenterService:
     @staticmethod
     def get_decision_center(
+        period: str = "TODAY",
+        comparison: str = "PREVIOUS_DAY",
+        unit: str = "All Units",
+        user_role: str = "SUPER_ADMIN",
+        section_access: str = "ALL"
+    ) -> DecisionCenterData:
+        """Uses uploaded template data when present, otherwise the built-in synthetic data."""
+        db = SessionLocal()
+        try:
+            if has_template_data(db):
+                return decision_center_from_template(db, period, comparison, unit, user_role, section_access)
+        finally:
+            db.close()
+        return DecisionCenterService._synthetic_decision_center(period, comparison, unit, user_role, section_access)
+
+    @staticmethod
+    def _synthetic_decision_center(
         period: str = "TODAY",
         comparison: str = "PREVIOUS_DAY",
         unit: str = "All Units",

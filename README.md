@@ -16,12 +16,18 @@ An AI-powered textile factory management, real-data report ingestion, and decisi
    - Non-blocking job queue with live progress polling (`progress_pct`, `processed_count`, file status badges).
    - Fault-tolerant batch processing.
 
-3. **Reconciled Production Dashboard**:
+3. **Data Template (updates every page)**:
+   - In **Upload Reports**, click **Template** to download an Excel file with one sheet per data set (`Machine_Data`, `Manpower`, `Quality`, `Business`, `Stock`, `Actions`) plus an `Instructions` sheet listing every field. **Sample** downloads the same file pre-filled with 7 days of example data.
+   - Fill it in and upload it. Overview, Production, Machines & Downtime, Machine Comparison, Manpower & Quality, Revenue & Loss and Decision Center all recalculate from it.
+   - A page only switches from the built-in synthetic data once you upload data for it (e.g. a template with only a `Manpower` sheet changes only the Manpower & Quality page). A new template replaces earlier template data for the same dates.
+   - Field definitions live in `backend/app/services/template/template_spec.py`; the importer is `template_importer.py`.
+
+4. **Reconciled Production Dashboard**:
    - 100% data-driven metrics with zero hardcoded/mock fallbacks.
    - Strict shift & department reconciliation ($\sum \text{Shift Actuals} = \text{Cumulative Actual}$, $\sum \text{Shift Targets} = \text{Cumulative Target}$, $\sum \text{Shift Gaps} = \text{Cumulative Gap}$).
    - Source-driven Downtime and Production Factors (`Data unavailable` handling for omitted metrics).
 
-4. **Data Lineage Traceability**:
+5. **Data Lineage Traceability**:
    - End-to-end auditability mapping every KPI back to `source_file`, `source_sheet`, `source_row`, and `source_column`.
 
 ---

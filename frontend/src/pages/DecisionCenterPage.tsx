@@ -116,7 +116,7 @@ export const DecisionCenterPage: React.FC<DecisionCenterPageProps> = ({
       <ActionTrackerSection initialTracker={data.action_tracker} />
 
       {/* 9. AI INSIGHT */}
-      <AIInsightSection data={data.ai_insight} />
+      <AIInsightSection data={data.ai_insight} topPriority={data.top_priority} />
     </div>
   );
 };

@@ -1,4 +1,7 @@
 from typing import List, Optional
+from app.db.session import SessionLocal
+from app.services.template.factory_data import has_template_data
+from app.services.template.machines_template import machines_from_template
 from app.schemas.machines import (
     MachinesModuleResponse,
     MachinePerformanceItem,
@@ -12,6 +15,21 @@ from app.schemas.machines import (
 class MachinesService:
     @staticmethod
     def get_machines_data(
+        period: str = "THIS_MONTH",
+        machine_type: str = "ALL",
+        machine_id: str = "ALL"
+    ) -> MachinesModuleResponse:
+        """Uses uploaded template data when present, otherwise the built-in synthetic data."""
+        db = SessionLocal()
+        try:
+            if has_template_data(db):
+                return machines_from_template(db, period, machine_type, machine_id)
+        finally:
+            db.close()
+        return MachinesService._synthetic_machines_data(period, machine_type, machine_id)
+
+    @staticmethod
+    def _synthetic_machines_data(
         period: str = "THIS_MONTH",
         machine_type: str = "ALL",
         machine_id: str = "ALL"

@@ -1,4 +1,7 @@
 from typing import Optional
+from app.db.session import SessionLocal
+from app.services.template.factory_data import has_template_data
+from app.services.template.overview_template import overview_from_template
 from app.schemas.overview import (
     FactoryOverviewResponse,
     TimePeriod,
@@ -20,6 +23,23 @@ from app.schemas.overview import (
 class OverviewService:
     @staticmethod
     def get_factory_overview(
+        period: TimePeriod = TimePeriod.TODAY,
+        comparison: ComparisonPeriod = ComparisonPeriod.PREVIOUS_DAY,
+        unit_id: Optional[str] = None,
+        user_role: str = "SUPER_ADMIN",
+        section_access: Optional[str] = None
+    ) -> FactoryOverviewResponse:
+        """Uses uploaded template data when present, otherwise the built-in synthetic data."""
+        db = SessionLocal()
+        try:
+            if has_template_data(db):
+                return overview_from_template(db, period, comparison, unit_id, user_role, section_access)
+        finally:
+            db.close()
+        return OverviewService._synthetic_overview(period, comparison, unit_id, user_role, section_access)
+
+    @staticmethod
+    def _synthetic_overview(
         period: TimePeriod = TimePeriod.TODAY,
         comparison: ComparisonPeriod = ComparisonPeriod.PREVIOUS_DAY,
         unit_id: Optional[str] = None,

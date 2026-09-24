@@ -3,6 +3,7 @@ import uuid
 from app.db.session import engine, Base, SessionLocal
 from app.models.system import SystemInfo, ModuleRegistry
 import app.models.ingestion  # noqa: F401
+import app.models.template_data  # noqa: F401
 from app.core.config import settings
 from app.core.logging import logger
 

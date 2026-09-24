@@ -1,4 +1,7 @@
 from typing import List, Optional, Dict
+from app.db.session import SessionLocal
+from app.services.template.factory_data import has_template_data
+from app.services.template.comparison_template import comparison_source
 from app.schemas.machine_comparison import (
     MachineComparisonResponse,
     MachineMasterOption,
@@ -98,6 +101,15 @@ class MachineComparisonService:
             }
         }
 
+        # Uploaded template data replaces the synthetic machine set, metrics and factory averages
+        template_ref: Optional[Dict[str, float]] = None
+        db = SessionLocal()
+        try:
+            if has_template_data(db):
+                master_machines, available_types, raw_db, template_ref, selected_ids = comparison_source(db, selected_ids, period)
+        finally:
+            db.close()
+
         # Filter active selected machines
         active_ids = [m_id for m_id in selected_ids if m_id in raw_db]
         
@@ -130,7 +142,15 @@ class MachineComparisonService:
         elif metric.upper() == "QUALITY":
             ref_val = 98.0
 
-        ref_formatted = f"{ref_val:.1f} {metric_meta['unit']}" if metric_meta['unit'] == '%' else f"{ref_val:,.0f} {metric_meta['unit']}"
+        if template_ref is not None:
+            ref_val = template_ref.get(metric.upper(), 0.0)
+
+        if metric_meta['unit'] == '%':
+            ref_formatted = f"{ref_val:.1f} %"
+        elif metric_meta['unit'] == 'kWh/kg':
+            ref_formatted = f"{ref_val:.2f} kWh/kg"
+        else:
+            ref_formatted = f"{ref_val:,.0f} {metric_meta['unit']}"
 
         # Build Primary Metrics list
         primary_metrics: List[MachineMetricValue] = []

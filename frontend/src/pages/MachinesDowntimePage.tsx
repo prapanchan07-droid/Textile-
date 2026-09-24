@@ -91,7 +91,7 @@ export const MachinesDowntimePage: React.FC = () => {
         trend={data.machine_trend}
         selectedMachineId={machineId}
         onMachineIdChange={setMachineId}
-        availableMachineIds={['V-09', 'V-05', 'SMX-03', 'V-12', 'RF-04', 'A-02']}
+        availableMachineIds={Object.keys(data.machine_trends_by_id ?? {})}
         trendsById={data.machine_trends_by_id}
       />
 

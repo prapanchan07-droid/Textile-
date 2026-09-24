@@ -1,14 +1,28 @@
 import React from 'react';
 import { Card } from '../ui/Card';
 import { Sparkles, ArrowRight, AlertTriangle } from 'lucide-react';
+import { FactoryOverviewData } from '../../types/overview';
 
 interface AiRecommendationSectionProps {
+  data: FactoryOverviewData;
   onViewDetails?: () => void;
 }
 
+const PRIORITY_STYLES: Record<string, { badge: string; icon: string }> = {
+  HIGH: { badge: 'bg-rose-100 border-rose-200 text-rose-800', icon: 'text-rose-600' },
+  MEDIUM: { badge: 'bg-amber-100 border-amber-200 text-amber-800', icon: 'text-amber-600' },
+  LOW: { badge: 'bg-emerald-100 border-emerald-200 text-emerald-800', icon: 'text-emerald-600' },
+};
+
 export const AiRecommendationSection: React.FC<AiRecommendationSectionProps> = ({
+  data,
   onViewDetails,
 }) => {
+  const { executive_summary: summary, recommended_investigation: investigation, low_efficiency_spotlight: spotlight } = data;
+  const topMachine = data.machines_requiring_attention[0];
+  const priority = PRIORITY_STYLES[investigation.priority] ?? PRIORITY_STYLES.MEDIUM;
+  const hasIssue = !!topMachine && summary.impact_kg > 0;
+
   return (
     <Card className="space-y-5 p-6 border-indigo-200 bg-gradient-to-br from-indigo-50/40 via-white to-slate-50">
       {/* Header with Title & Priority Badge */}
@@ -27,9 +41,9 @@ export const AiRecommendationSection: React.FC<AiRecommendationSectionProps> = (
           </div>
         </div>
 
-        <span className="inline-flex items-center gap-1.5 bg-rose-100 border border-rose-200 text-rose-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-          <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-          <span>HIGH PRIORITY</span>
+        <span className={`inline-flex items-center gap-1.5 border text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider ${priority.badge}`}>
+          <AlertTriangle className={`w-3.5 h-3.5 ${priority.icon}`} />
+          <span>{investigation.priority} PRIORITY</span>
         </span>
       </div>
 
@@ -38,16 +52,14 @@ export const AiRecommendationSection: React.FC<AiRecommendationSectionProps> = (
         {/* 1. Problem */}
         <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">1. PROBLEM</span>
-          <p className="font-extrabold text-slate-900 leading-snug">
-            Production is 6.4% below today's target.
-          </p>
+          <p className="font-extrabold text-slate-900 leading-snug">{summary.factory_status}</p>
         </div>
 
         {/* 2. Main Reason */}
         <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">2. MAIN REASON</span>
           <p className="font-extrabold text-slate-900 leading-snug">
-            Machine downtime is the largest observed contributor.
+            {hasIssue ? `${summary.main_issue} is the largest observed contributor.` : summary.main_issue}
           </p>
         </div>
 
@@ -55,16 +67,16 @@ export const AiRecommendationSection: React.FC<AiRecommendationSectionProps> = (
         <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">3. MACHINE / AREA</span>
           <p className="font-extrabold text-indigo-600 font-mono leading-snug">
-            V-09 (680 kg loss, 240 min downtime)
+            {hasIssue
+              ? `${topMachine.machine_id} (${topMachine.loss_kg.toLocaleString()} kg loss, ${topMachine.downtime_minutes} min downtime)`
+              : 'N/A'}
           </p>
         </div>
 
         {/* 4. Action */}
         <div className="bg-white p-3.5 rounded-xl border border-indigo-200 shadow-sm space-y-1">
           <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">4. RECOMMENDED ACTION</span>
-          <p className="font-extrabold text-slate-900 leading-snug">
-            Check V-09 downtime and maintenance history.
-          </p>
+          <p className="font-extrabold text-slate-900 leading-snug">{summary.recommended_action}</p>
         </div>
       </div>
 
@@ -73,7 +85,9 @@ export const AiRecommendationSection: React.FC<AiRecommendationSectionProps> = (
         <div className="space-y-0.5">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">WHY THIS RECOMMENDATION?</span>
           <p className="text-xs font-semibold text-slate-700">
-            V-09 has the highest observed production loss and below-average efficiency (84.2% vs 91.6% average).
+            {hasIssue
+              ? `${spotlight.machine_id} has the highest observed production loss and below-average efficiency (${spotlight.efficiency_pct}% vs ${spotlight.factory_avg_pct}% average).`
+              : 'No machine shows a production shortfall in the selected period.'}
           </p>
         </div>
 

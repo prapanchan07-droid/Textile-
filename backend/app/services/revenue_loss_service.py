@@ -1,4 +1,7 @@
 from typing import List, Optional
+from app.db.session import SessionLocal
+from app.services.template.factory_data import has_business_data
+from app.services.template.revenue_template import revenue_from_template
 from app.schemas.revenue_loss import (
     RevenueLossModuleResponse,
     RevenueCurrentSummary,
@@ -13,6 +16,17 @@ from app.schemas.revenue_loss import (
 class RevenueLossService:
     @staticmethod
     def get_revenue_loss_data(period: str = "THIS_MONTH") -> RevenueLossModuleResponse:
+        """Uses uploaded template data when present, otherwise the built-in synthetic data."""
+        db = SessionLocal()
+        try:
+            if has_business_data(db):
+                return revenue_from_template(db, period)
+        finally:
+            db.close()
+        return RevenueLossService._synthetic_revenue_loss_data(period)
+
+    @staticmethod
+    def _synthetic_revenue_loss_data(period: str = "THIS_MONTH") -> RevenueLossModuleResponse:
         # 1. Revenue Current Summary
         revenue_summary = RevenueCurrentSummary(
             revenue_amount_lakhs=28.5,

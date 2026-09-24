@@ -1,13 +1,24 @@
 from typing import Optional, List
-from fastapi import APIRouter, Depends, File, UploadFile, Form, HTTPException, status
+from fastapi import APIRouter, Depends, File, UploadFile, Form, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.common import StandardResponse
 from app.services.ingestion.ingestion_service import IngestionService, IngestionJobManager
+from app.services.template.template_builder import build_template_xlsx
 
 router = APIRouter(prefix="/ingestion", tags=["Report Data Ingestion"])
 
-@router.post("/upload-job", response_model=StandardResponse[dict])
+@router.get("/template")
+def download_data_template(sample: bool = Query(False, description="Pre-fill the template with 7 days of sample data")):
+    """Download the Excel data template. Fill it in and upload it to update every dashboard page."""
+    filename = "factory_data_sample.xlsx" if sample else "factory_data_template.xlsx"
+    return Response(
+        content=build_template_xlsx(with_sample=sample),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+@router.post("/upload-job",response_model=StandardResponse[dict])
 async def upload_multiple_reports_job(
     files: List[UploadFile] = File(...),
     report_type_override: Optional[str] = Form(None),

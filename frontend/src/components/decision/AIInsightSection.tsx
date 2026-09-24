@@ -1,12 +1,13 @@
 import React from 'react';
-import { AIInsightData } from '../../types/decisionCenter';
+import { AIInsightData, TopPriorityData } from '../../types/decisionCenter';
 import { Sparkles } from 'lucide-react';
 
 interface AIInsightSectionProps {
   data: AIInsightData;
+  topPriority: TopPriorityData;
 }
 
-export const AIInsightSection: React.FC<AIInsightSectionProps> = ({ data }) => {
+export const AIInsightSection: React.FC<AIInsightSectionProps> = ({ data, topPriority }) => {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
@@ -44,7 +45,7 @@ export const AIInsightSection: React.FC<AIInsightSectionProps> = ({ data }) => {
                 Production Gap
               </span>
               <span className="text-sm font-bold text-red-600 font-mono mt-0.5 block">
-                -2,380 kg
+                {topPriority.gap_kg.toLocaleString(undefined, { maximumFractionDigits: 0 })} kg
               </span>
             </div>
 
@@ -53,7 +54,7 @@ export const AIInsightSection: React.FC<AIInsightSectionProps> = ({ data }) => {
                 Main Contributor
               </span>
               <span className="text-sm font-bold text-slate-900 mt-0.5 block">
-                Machine downtime
+                {topPriority.main_contributor}
               </span>
             </div>
 
@@ -62,19 +63,19 @@ export const AIInsightSection: React.FC<AIInsightSectionProps> = ({ data }) => {
                 Most Affected
               </span>
               <span className="text-sm font-bold text-slate-900 mt-0.5 block">
-                V-09 — Vortex
+                {topPriority.most_affected_machine_id} — {topPriority.most_affected_machine_type}
               </span>
             </div>
           </div>
 
-          <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3 text-xs text-slate-700">
-            <span className="font-bold text-slate-900 block text-[10px] uppercase text-slate-400 mb-0.5">
-              Related Observation
-            </span>
-            <p className="font-medium">
-              Repeated power events occurred during the affected period.
-            </p>
-          </div>
+          {data.facts.length > 0 && (
+            <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3 text-xs text-slate-700">
+              <span className="font-bold text-slate-900 block text-[10px] uppercase text-slate-400 mb-0.5">
+                Related Observation
+              </span>
+              <p className="font-medium">{data.facts[data.facts.length - 1]}</p>
+            </div>
+          )}
         </div>
 
         {/* Subtle Highlighted Recommendation Box */}
@@ -83,7 +84,7 @@ export const AIInsightSection: React.FC<AIInsightSectionProps> = ({ data }) => {
             Recommended Action
           </span>
           <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4 text-xs font-bold text-indigo-950">
-            {data.recommended_focus || "Investigate V-09 downtime and related power events."}
+            {data.recommended_focus}
           </div>
         </div>
       </div>

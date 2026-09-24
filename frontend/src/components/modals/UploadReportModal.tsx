@@ -11,7 +11,9 @@ import {
   AlertTriangle,
   FolderOpen,
   Trash2,
-  Plus
+  Plus,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 import { 
   ingestionService, 
@@ -54,6 +56,7 @@ export const UploadReportModal: React.FC<UploadReportModalProps> = ({
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<JobStatusResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<'template' | 'sample' | null>(null);
 
   const [history, setHistory] = useState<ReportHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState<boolean>(false);
@@ -185,6 +188,18 @@ export const UploadReportModal: React.FC<UploadReportModalProps> = ({
     }
   };
 
+  const handleDownloadTemplate = async (sample: boolean) => {
+    setDownloading(sample ? 'sample' : 'template');
+    setError(null);
+    try {
+      await ingestionService.downloadTemplate(sample);
+    } catch (err: any) {
+      setError(err.message || 'Failed to download the data template.');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
   const handleResetForm = () => {
     setSelectedFiles([]);
     setJobStatus(null);
@@ -259,6 +274,39 @@ export const UploadReportModal: React.FC<UploadReportModalProps> = ({
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
           {activeTab === 'upload' ? (
             <>
+              {/* Data Template: download, fill in, upload to update every page */}
+              <div className="bg-blue-50/60 border border-blue-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <FileSpreadsheet className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-bold text-slate-900">Data Template</h3>
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Download the template, fill in your data and upload it here. Every page updates from it.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    disabled={downloading !== null}
+                    onClick={() => handleDownloadTemplate(false)}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-bold rounded-lg shadow-sm transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    {downloading === 'template' ? 'Preparing...' : 'Template'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloading !== null}
+                    onClick={() => handleDownloadTemplate(true)}
+                    className="px-3 py-1.5 bg-white hover:bg-slate-50 disabled:opacity-60 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    {downloading === 'sample' ? 'Preparing...' : 'Sample'}
+                  </button>
+                </div>
+              </div>
+
               {/* Drag & Drop Zone */}
               <div
                 onDragOver={handleDragOver}

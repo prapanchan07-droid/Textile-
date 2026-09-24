@@ -26,9 +26,11 @@ export const MachinePerformanceSection: React.FC<MachinePerformanceSectionProps>
   selectedMachineId,
   onMachineIdChange,
 }) => {
-  // Master list to ensure dropdown options are never lost upon selection
-  const masterList = ['V-09', 'V-05', 'SMX-03', 'V-12', 'RF-04', 'A-02'];
-  const availableMachineIds = ['ALL', ...Array.from(new Set([...machines.map((m) => m.machine_id), ...masterList]))];
+  // Keep the selected machine in the dropdown even when the type filter hides it
+  const availableMachineIds = [
+    'ALL',
+    ...Array.from(new Set([...machines.map((m) => m.machine_id), ...(selectedMachineId !== 'ALL' ? [selectedMachineId] : [])])),
+  ];
 
   return (
     <Card className="space-y-6 p-6">
