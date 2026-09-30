@@ -2,29 +2,156 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    background-color: #f4f5f8;
-    color: #0f172a;
-    -webkit-font-smoothing: antialiased;
+/* Design tokens. UI colors are RGB triplets so Tailwind can apply alpha;
+   chart colors are hex because they are read from JS and passed to SVG. */
+:root {
+  color-scheme: light;
+  --canvas: 246 247 249;
+  --surface: 255 255 255;
+  --subtle: 249 250 251;
+  --muted: 241 243 246;
+  --line: 229 231 235;
+  --line-strong: 209 213 219;
+  --ink: 17 24 39;
+  --ink-2: 75 85 99;
+  --ink-3: 107 114 128;
+  --accent: 37 99 235;
+  --accent-ink: 29 78 216;
+  --accent-soft: 239 244 255;
+  --ok: 6 118 71;
+  --ok-soft: 236 253 243;
+  --warn: 181 71 8;
+  --warn-soft: 255 250 235;
+  --bad: 180 35 24;
+  --bad-soft: 254 243 242;
+  --sidebar: 15 23 42;
+  --sidebar-ink: 241 245 249;
+  --sidebar-ink-2: 148 163 184;
+  --sidebar-hover: 30 41 59;
+  --sidebar-active: 37 50 73;
+
+  --chart-surface: #ffffff;
+  --chart-grid: #eceef1;
+  --chart-axis: #d1d5db;
+  --chart-label: #6b7280;
+  --chart-ink: #111827;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-muted: #c3c7cf;
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --canvas: 11 13 16;
+    --surface: 20 22 27;
+    --subtle: 24 27 33;
+    --muted: 31 35 42;
+    --line: 38 42 50;
+    --line-strong: 55 61 72;
+    --ink: 243 244 246;
+    --ink-2: 195 199 206;
+    --ink-3: 139 145 154;
+    --accent: 96 145 255;
+    --accent-ink: 147 180 255;
+    --accent-soft: 26 36 64;
+    --ok: 74 222 128;
+    --ok-soft: 17 40 28;
+    --warn: 251 191 36;
+    --warn-soft: 45 34 12;
+    --bad: 248 113 113;
+    --bad-soft: 52 20 20;
+    --sidebar: 14 16 20;
+    --sidebar-ink: 241 245 249;
+    --sidebar-ink-2: 139 145 154;
+    --sidebar-hover: 28 31 38;
+    --sidebar-active: 34 39 49;
+
+    --chart-surface: #14161b;
+    --chart-grid: #262a32;
+    --chart-axis: #373d48;
+    --chart-label: #8b919a;
+    --chart-ink: #f3f4f6;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-muted: #4b515c;
   }
 }
 
-/* Custom scrollbar matching sleek light UI */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: 11 13 16;
+  --surface: 20 22 27;
+  --subtle: 24 27 33;
+  --muted: 31 35 42;
+  --line: 38 42 50;
+  --line-strong: 55 61 72;
+  --ink: 243 244 246;
+  --ink-2: 195 199 206;
+  --ink-3: 139 145 154;
+  --accent: 96 145 255;
+  --accent-ink: 147 180 255;
+  --accent-soft: 26 36 64;
+  --ok: 74 222 128;
+  --ok-soft: 17 40 28;
+  --warn: 251 191 36;
+  --warn-soft: 45 34 12;
+  --bad: 248 113 113;
+  --bad-soft: 52 20 20;
+  --sidebar: 14 16 20;
+  --sidebar-ink: 241 245 249;
+  --sidebar-ink-2: 139 145 154;
+  --sidebar-hover: 28 31 38;
+  --sidebar-active: 34 39 49;
+
+  --chart-surface: #14161b;
+  --chart-grid: #262a32;
+  --chart-axis: #373d48;
+  --chart-label: #8b919a;
+  --chart-ink: #f3f4f6;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-muted: #4b515c;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans text-sm antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/60 ring-offset-1 ring-offset-surface;
+  }
+}
+
+@layer utilities {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
-
-::-webkit-scrollbar-track {
-  background: #f4f5f8;
-}
-
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: rgb(var(--line-strong));
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
