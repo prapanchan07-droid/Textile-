@@ -40,6 +40,12 @@ if settings.CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[str(origin) for origin in settings.CORS_ORIGINS],
+        # Dev convenience: LAN / Tailscale (100.64.0.0/10) hosts on the Vite port
+        allow_origin_regex=(
+            r"^http://(10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|100\.\d+\.\d+\.\d+):5173$"
+            if settings.DEBUG
+            else None
+        ),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
