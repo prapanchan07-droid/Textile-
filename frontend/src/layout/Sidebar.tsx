@@ -1,8 +1,9 @@
 import React from 'react';
 import { NavLink, useSearchParams } from 'react-router-dom';
-import { ChevronsLeft, ChevronsRight, X } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, CircleDot, X } from 'lucide-react';
 import { cn } from '../lib/format';
 import { NAV } from './nav';
+import { AshokLogo } from './AshokLogo';
 
 export const Sidebar: React.FC<{
   collapsed: boolean;
@@ -18,15 +19,9 @@ export const Sidebar: React.FC<{
   const body = (isMobile: boolean) => {
     const narrow = collapsed && !isMobile;
     return (
-      <div className="flex h-full flex-col bg-sidebar text-sidebar-ink">
-        <div className={cn('flex h-14 shrink-0 items-center gap-2.5 px-4', narrow && 'justify-center px-0')}>
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-accent text-xs font-bold text-white">AT</div>
-          {!narrow && (
-            <div className="min-w-0 leading-tight">
-              <div className="truncate text-sm font-semibold">Ashok Textiles</div>
-              <div className="truncate text-2xs text-sidebar-ink-2">Operations Platform</div>
-            </div>
-          )}
+      <div className="flex h-full flex-col border-t-[3px] border-[#5a3828] bg-sidebar text-sidebar-ink">
+        <div className={cn('flex h-[66px] shrink-0 items-center gap-2.5 border-b border-line px-4', narrow && 'justify-center px-0')}>
+          <AshokLogo compact={narrow} />
           {isMobile && (
             <button
               onClick={onCloseMobile}
@@ -38,11 +33,11 @@ export const Sidebar: React.FC<{
           )}
         </div>
 
-        <nav className="flex-1 space-y-5 overflow-y-auto px-2.5 py-3" aria-label="Main">
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5" aria-label="Main">
           {NAV.map((group) => (
             <div key={group.label}>
               {!narrow ? (
-                <div className="mb-1 px-2 text-2xs font-medium uppercase tracking-wider text-sidebar-ink-2/80">{group.label}</div>
+                <div className="mb-2 px-2 text-2xs font-semibold uppercase tracking-[0.14em] text-sidebar-ink-2/70">{group.label}</div>
               ) : (
                 <div className="mx-auto mb-2 h-px w-6 bg-sidebar-hover" />
               )}
@@ -56,17 +51,17 @@ export const Sidebar: React.FC<{
                       title={narrow ? item.label : undefined}
                       className={({ isActive }) =>
                         cn(
-                          'flex h-8 items-center gap-2.5 rounded-md px-2 text-sm transition-colors',
+                          'flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm transition-all',
                           narrow && 'justify-center px-0',
                           isActive
-                            ? 'bg-sidebar-active font-medium text-sidebar-ink'
+                            ? 'bg-sidebar-active font-semibold text-white shadow-sm'
                             : 'text-sidebar-ink-2 hover:bg-sidebar-hover hover:text-sidebar-ink',
                         )
                       }
                     >
                       {({ isActive }) => (
                         <>
-                          <item.icon className={cn('size-4 shrink-0', isActive && 'text-[rgb(var(--accent))]')} />
+                          <item.icon className={cn('size-4 shrink-0', isActive && 'text-white')} />
                           {!narrow && <span className="truncate">{item.label}</span>}
                         </>
                       )}
@@ -79,17 +74,17 @@ export const Sidebar: React.FC<{
         </nav>
 
         {!isMobile && (
-          <button
-            onClick={onToggleCollapsed}
-            className={cn(
-              'm-2.5 flex h-8 items-center gap-2 rounded-md px-2 text-xs text-sidebar-ink-2 hover:bg-sidebar-hover hover:text-sidebar-ink',
-              narrow && 'justify-center',
-            )}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
-            {!narrow && 'Collapse'}
-          </button>
+          <div className={cn('m-3 rounded-xl border border-line bg-subtle p-2.5', narrow && 'border-0 bg-transparent p-0')}>
+            {!narrow && <div className="mb-2 flex items-center gap-1.5 text-2xs text-sidebar-ink-2"><CircleDot className="size-3 text-ok" /> Shift A · Live data</div>}
+            <button
+              onClick={onToggleCollapsed}
+              className={cn('flex h-7 w-full items-center gap-2 rounded-md px-1 text-xs text-sidebar-ink-2 hover:bg-sidebar-hover hover:text-sidebar-ink', narrow && 'justify-center')}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
+              {!narrow && 'Collapse sidebar'}
+            </button>
+          </div>
         )}
       </div>
     );
@@ -97,7 +92,7 @@ export const Sidebar: React.FC<{
 
   return (
     <>
-      <aside className={cn('hidden shrink-0 transition-[width] duration-150 lg:block', collapsed ? 'w-[60px]' : 'w-60')}>
+      <aside className={cn('hidden shrink-0 transition-[width] duration-150 lg:block', collapsed ? 'w-[60px]' : 'w-64')}>
         {body(false)}
       </aside>
       {mobileOpen && (

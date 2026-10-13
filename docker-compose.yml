@@ -2,25 +2,40 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     container_name: ai-factory-backend
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-      - factory_data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:////app/data/ai_factory_manager.db
+      - ENVIRONMENT=production
+      - DEBUG=False
     env_file:
-      - ./backend/.env
+      - path: ./backend/.env
+        required: false
+    volumes:
+      - factory_data:/app/data
+      - factory_reports:/app/uploaded_reports
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
     container_name: ai-factory-frontend
     ports:
       - "5173:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
   factory_data:
+  factory_reports:
