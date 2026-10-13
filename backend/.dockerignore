@@ -1,6 +1,16 @@
 .venv
+venv/
+env/
 __pycache__
 *.pyc
-.env
+*.pyo
+*.pyd
+.Python
+*.db
+*.sqlite
+*.sqlite3
 .git
+.gitignore
+.vscode
+.idea
 uploaded_reports/*

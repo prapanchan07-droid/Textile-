@@ -8,8 +8,8 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md';
 
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary: 'bg-accent text-white hover:bg-accent/90 border border-transparent',
-  secondary: 'bg-surface text-ink border border-line hover:bg-subtle hover:border-line-strong',
+  primary: 'bg-accent text-white hover:bg-accent/90 border border-transparent shadow-sm shadow-accent/20',
+  secondary: 'bg-surface text-ink border border-line hover:bg-subtle hover:border-line-strong shadow-sm shadow-black/[0.02]',
   ghost: 'text-ink-2 hover:text-ink hover:bg-muted border border-transparent',
   danger: 'bg-bad text-white hover:bg-bad/90 border border-transparent',
 };
@@ -27,7 +27,7 @@ export const Button = React.forwardRef<
     ref={ref}
     disabled={disabled || loading}
     className={cn(
-      'inline-flex items-center justify-center gap-1.5 rounded-md font-medium whitespace-nowrap transition-colors disabled:opacity-50 disabled:pointer-events-none',
+      'inline-flex items-center justify-center gap-1.5 rounded-lg font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-accent/30 disabled:opacity-50 disabled:pointer-events-none',
       size === 'sm' ? 'h-7 px-2.5 text-xs' : 'h-8 px-3 text-sm',
       buttonVariants[variant],
       className,
@@ -110,7 +110,7 @@ export const titleCase = (s: string) =>
 /* ------------------------------------------------------------------ Card */
 
 export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
-  <div className={cn('rounded-lg border border-line bg-surface shadow-card', className)} {...props} />
+  <div className={cn('rounded-xl border border-line/90 bg-surface shadow-card', className)} {...props} />
 );
 
 export const CardHeader: React.FC<{
@@ -119,7 +119,7 @@ export const CardHeader: React.FC<{
   actions?: React.ReactNode;
   className?: string;
 }> = ({ title, subtitle, actions, className }) => (
-  <div className={cn('flex items-start justify-between gap-3 px-4 pt-3.5 pb-3', className)}>
+  <div className={cn('flex items-start justify-between gap-3 px-5 pt-4 pb-3', className)}>
     <div className="min-w-0">
       <h2 className="text-sm font-semibold text-ink">{title}</h2>
       {subtitle && <p className="mt-0.5 text-xs text-ink-3">{subtitle}</p>}
@@ -129,7 +129,7 @@ export const CardHeader: React.FC<{
 );
 
 export const CardBody: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
-  <div className={cn('px-4 pb-4', className)} {...props} />
+  <div className={cn('px-5 pb-5', className)} {...props} />
 );
 
 /* ------------------------------------------------------------------ KPI tile */
@@ -152,8 +152,8 @@ export const Kpi: React.FC<KpiProps> = ({ label, value, hint, delta, status, onC
     <Comp
       onClick={onClick}
       className={cn(
-        'relative flex min-w-0 flex-col gap-1 rounded-lg border border-line bg-surface p-3.5 text-left shadow-card',
-        onClick && 'hover:border-line-strong transition-colors',
+        'relative flex min-w-0 flex-col gap-1.5 rounded-xl border border-line/90 bg-surface p-4 text-left shadow-card',
+        onClick && 'hover:-translate-y-0.5 hover:border-line-strong hover:shadow-md transition-all',
         className,
       )}
     >

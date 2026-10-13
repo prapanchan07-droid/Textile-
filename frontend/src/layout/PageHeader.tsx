@@ -17,11 +17,11 @@ export const PageHeader: React.FC<{
 }> = ({ title, description, showPeriod, actions, tabs }) => {
   const [period, setPeriod] = usePeriod();
   return (
-    <div className="mb-5 space-y-4">
+    <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold tracking-tight text-ink">{title}</h1>
-          {description && <p className="mt-0.5 text-sm text-ink-3">{description}</p>}
+          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-[26px]">{title}</h1>
+          {description && <p className="mt-1 text-sm text-ink-3">{description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {actions}

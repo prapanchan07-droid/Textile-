@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Menu, Monitor, Moon, Search, Sun, UploadCloud } from 'lucide-react';
+import { Bell, Menu, Monitor, Moon, Search, Sun, UploadCloud } from 'lucide-react';
 import { cn, relativeTime } from '../lib/format';
 import { useHealth, useImportHistory } from '../api/queries';
 import { useTheme, type ThemePref } from '../app/state';
 import { Button } from '../design/ui';
 import { Sidebar } from './Sidebar';
 import { CommandPalette } from './CommandPalette';
+import { findNav } from './nav';
 
 const readCollapsed = () => {
   try {
@@ -49,7 +50,7 @@ export const AppShell: React.FC = () => {
     });
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden bg-canvas">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-[70] focus:m-2 focus:rounded focus:bg-surface focus:px-3 focus:py-2"
@@ -65,8 +66,8 @@ export const AppShell: React.FC = () => {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onOpenMenu={() => setMobileOpen(true)} onOpenPalette={() => setPaletteOpen(true)} />
         <div id="main-scroll" className="flex-1 overflow-y-auto">
-          <main id="main" className="mx-auto w-full max-w-[1440px] px-4 pb-12 pt-5 sm:px-6">
-            <Outlet />
+          <main id="main" className="mx-auto w-full max-w-[1500px] px-4 pb-12 pt-6 sm:px-7 lg:px-9">
+            <div className="page-enter"><Outlet /></div>
           </main>
         </div>
       </div>
@@ -84,27 +85,31 @@ const Topbar: React.FC<{ onOpenMenu: () => void; onOpenPalette: () => void }> = 
     .slice(-1)[0];
   const online = health.isSuccess && health.data.status === 'healthy';
   const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
+  const activePage = findNav(location.pathname);
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-surface px-4 sm:px-6">
+    <header className="flex h-[66px] shrink-0 items-center gap-3 border-b border-line/80 border-t-[3px] border-t-[#5a3828] bg-surface/95 px-4 backdrop-blur sm:px-7">
       <button onClick={onOpenMenu} className="rounded-md p-1.5 text-ink-2 hover:bg-muted lg:hidden" aria-label="Open menu">
         <Menu className="size-5" />
       </button>
 
       <button
         onClick={onOpenPalette}
-        className="flex h-8 w-full max-w-sm items-center gap-2 rounded-md border border-line bg-subtle px-2.5 text-sm text-ink-3 hover:border-line-strong"
+        className="flex h-9 w-full max-w-md items-center gap-2 rounded-xl border border-line bg-subtle px-3 text-sm text-ink-3 transition-colors hover:border-line-strong hover:bg-surface"
       >
         <Search className="size-4" />
-        <span className="flex-1 truncate text-left">Search pages, machines…</span>
+        <span className="flex-1 truncate text-left">Search pages, machines, actions…</span>
         <kbd className="hidden rounded border border-line bg-surface px-1.5 text-2xs sm:inline">{isMac ? '⌘' : 'Ctrl'} K</kbd>
       </button>
 
-      <div className="flex-1" />
+      <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
+        <span className="h-5 w-px bg-line" />
+        <span className="truncate text-sm font-medium text-ink">{activePage?.label ?? 'Operations'}</span>
+      </div>
 
       <Link
         to="/admin/system"
-        className="hidden items-center gap-2 whitespace-nowrap rounded-md px-2 py-1 text-xs text-ink-3 hover:bg-muted md:flex"
+        className="hidden items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs text-ink-3 hover:bg-muted md:flex"
         title={online ? 'API connected' : 'API unreachable'}
       >
         <span className={cn('size-2 rounded-full', health.isLoading ? 'bg-ink-3' : online ? 'bg-ok' : 'bg-bad')} />
@@ -120,6 +125,11 @@ const Topbar: React.FC<{ onOpenMenu: () => void; onOpenPalette: () => void }> = 
       </Link>
 
       <ThemeToggle />
+
+      <button className="relative rounded-lg p-2 text-ink-2 transition-colors hover:bg-muted hover:text-ink" aria-label="Notifications">
+        <Bell className="size-4" />
+        <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-bad ring-2 ring-surface" />
+      </button>
 
       <Link to="/data">
         <Button variant="primary" icon={<UploadCloud className="size-4" />}>
@@ -138,7 +148,7 @@ const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={() => setTheme(next)}
-      className="rounded-md p-1.5 text-ink-2 hover:bg-muted hover:text-ink"
+      className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-muted hover:text-ink"
       aria-label={`Theme: ${pref}. Switch to ${next}`}
       title={`Theme: ${pref}`}
     >
