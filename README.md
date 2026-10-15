@@ -27,8 +27,25 @@ An AI-powered textile factory management, real-data report ingestion, and decisi
    - Strict shift & department reconciliation ($\sum \text{Shift Actuals} = \text{Cumulative Actual}$, $\sum \text{Shift Targets} = \text{Cumulative Target}$, $\sum \text{Shift Gaps} = \text{Cumulative Gap}$).
    - Source-driven Downtime and Production Factors (`Data unavailable` handling for omitted metrics).
 
-5. **Data Lineage Traceability**:
+5. **Weaving module (sample data)**:
+   - `/weaving` has an Owner view (verdict, decisions with ₹ at stake, where money leaks, style profit) and a Manager view (looms stopped now, shifts, problem looms, open actions), plus Looms, Stoppages, Fabric quality, Styles & profit and People & maintenance tabs.
+   - It currently runs on deterministic **mock data** (`backend/app/services/weaving_service.py`) and shows a "Sample data" banner. Replace `_build_dataset` with a real loader when weaving reports are available.
+
+6. **Data Lineage Traceability**:
    - End-to-end auditability mapping every KPI back to `source_file`, `source_sheet`, `source_row`, and `source_column`.
+
+---
+
+## 🐳 Run with Docker
+
+```bash
+docker compose up -d --build
+```
+
+- App: http://localhost:5173 (nginx serves the UI and proxies `/api/` to the backend)
+- API docs: http://localhost:8000/api/v1/docs
+- Data lives in the named volumes `factory_data` (SQLite) and `factory_reports` (uploads). `docker compose down` keeps them; add `-v` to wipe them.
+- The backend drops to a non-root user at start-up. `.dockerignore` files keep `uploaded_reports/`, `.env` and `node_modules` out of the images.
 
 ---
 
@@ -106,31 +123,22 @@ npm run dev
 
 ```
 Textile/
-├── .gitignore                      # Git ignore rule definitions (Python, Node, DB, OS)
-├── README.md                       # Developer & Collaborator Documentation
-├── uploaded_reports/               # Staging folder for uploaded factory report files
-│   └── .gitkeep
-├── backend/                        # FastAPI Backend Application
+├── docker-compose.yml              # Backend + frontend (nginx) stack
+├── backend/                        # FastAPI backend
 │   ├── app/
-│   │   ├── api/v1/                 # Endpoints (production, ingestion, overview, decision center)
-│   │   ├── core/                   # Config, logging, exceptions
-│   │   ├── db/                     # Database session & tables setup
-│   │   ├── models/                 # SQLAlchemy ORM schemas
-│   │   ├── schemas/                # Pydantic data schemas
-│   │   └── services/               # Ingestion Service, Extractor, Normalizer, Production Service
-│   ├── .env.example                # Backend environment variable template
-│   ├── requirements.txt            # Python dependencies list
-│   └── main.py                     # ASGI App Entrypoint
-└── frontend/                       # React + Vite Frontend Application
-    ├── src/
-    │   ├── components/             # Header, Modals, Production UI, KPI Cards
-    │   ├── pages/                  # Dashboard pages (Production, Overview, Decision Center)
-    │   ├── services/               # API clients & backend communication
-    │   └── types/                  # TypeScript interfaces & types
-    ├── package.json                # Node scripts & npm dependencies
-    ├── vite.config.ts              # Vite bundler configuration
-    ├── tailwind.config.js          # Tailwind CSS styling config
-    └── .env.example                # Frontend environment variable template
+│   │   ├── api/v1/                 # Endpoints (production, ingestion, overview, weaving, ...)
+│   │   ├── core/ db/ models/       # Config, database, ORM models
+│   │   ├── schemas/                # Pydantic schemas
+│   │   └── services/               # Ingestion, template, module services (weaving_service.py)
+│   ├── uploaded_reports/           # Upload staging (git-ignored; may hold employee data)
+│   ├── Dockerfile, requirements.txt, .env.example
+├── frontend/                       # React + Vite + TypeScript
+│   └── src/
+│       ├── app/ layout/ design/    # Router, shell, design system and charts
+│       ├── features/               # One folder per page group (weaving, production, quality, ...)
+│       ├── api/ lib/ types/        # React Query hooks, formatters, backend types
+│   ├── Dockerfile, nginx.conf
+└── docs/REDESIGN.md                # Redesign decisions
 ```
 
 ---
@@ -159,6 +167,7 @@ python -c "from app.db.session import SessionLocal; print('DB connection verifie
 | `GET` | `/api/v1/ingestion/job/{job_id}` | Poll progress status for an active ingestion job |
 | `GET` | `/api/v1/production` | Get reconciled production metrics for date and unit |
 | `GET` | `/api/v1/production/lineage` | Trace data lineage for production metrics back to source file/row |
+| `GET` | `/api/v1/weaving?period=` | Weaving module data (mock): KPIs, decisions, looms, stoppages, quality, styles, people |
 | `GET` | `/api/v1/health` | System health check and database connectivity status |
 
 ---

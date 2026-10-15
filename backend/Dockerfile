@@ -17,8 +17,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend source code
 COPY . .
 
-# Ensure data and reports directories exist for persistent storage
-RUN mkdir -p /app/data /app/uploaded_reports
+# The app runs as an unprivileged user (see the entrypoint).
+RUN useradd --create-home --uid 10001 appuser     && mkdir -p /app/data /app/uploaded_reports     && chown -R appuser:appuser /app/data /app/uploaded_reports
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/$//' /usr/local/bin/docker-entrypoint.sh && chmod +x /usr/local/bin/docker-entrypoint.sh
+# The entrypoint starts as root only to fix volume ownership, then runs the app as appuser.
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 8000
 

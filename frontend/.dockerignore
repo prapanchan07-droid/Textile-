@@ -1,8 +1,10 @@
-node_modules
-dist
-.git
-.vscode
-.idea
-*.log
+node_modules/
+dist/
+build/
 .env
-.env.local
+.env.*
+!.env.example
+npm-debug.log*
+.git
+.vscode/
+.idea/

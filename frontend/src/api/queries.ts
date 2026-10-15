@@ -9,6 +9,7 @@ import type { MachineComparisonResponse } from '../types/machineComparison';
 import type { ManpowerQualityModuleData } from '../types/manpowerQuality';
 import type { RevenueLossModuleData } from '../types/revenueLoss';
 import type { DecisionCenterData } from '../types/decisionCenter';
+import type { WeavingModuleData } from '../types/weaving';
 
 /**
  * Every server read goes through a hook here. React Query gives caching across
@@ -27,6 +28,7 @@ export const qk = {
   comparison: (args: ComparisonArgs) => ['api', 'comparison', args] as const,
   manpowerQuality: (p: Period) => ['api', 'manpower-quality', p] as const,
   revenue: (p: Period) => ['api', 'revenue', p] as const,
+  weaving: (p: Period) => ['api', 'weaving', p] as const,
   history: ['api', 'ingestion', 'history'] as const,
 };
 
@@ -197,3 +199,10 @@ export async function downloadTemplate(sample: boolean) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+export const useWeaving = (period: Period) =>
+  useQuery({
+    queryKey: qk.weaving(period),
+    queryFn: () => getData<WeavingModuleData>('/weaving', { period }),
+    placeholderData: keepPreviousData,
+  });

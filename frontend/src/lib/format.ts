@@ -31,6 +31,7 @@ export const signed = (v: number, fmt: (n: number) => string) => `${v > 0 ? '+' 
 export const inrFromLakhs = (lakhs: number | null | undefined) => {
   if (lakhs == null) return '—';
   const abs = Math.abs(lakhs);
+  if (abs < 0.05) return '₹0 L';
   if (abs >= 100) return `₹${nf1.format(lakhs / 100)} Cr`;
   return `₹${nf1.format(lakhs)} L`;
 };

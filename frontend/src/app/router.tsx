@@ -11,6 +11,12 @@ import { QualityPage } from '../features/quality/QualityPage';
 import { WorkforcePage } from '../features/workforce/WorkforcePage';
 import { CommercialPage } from '../features/commercial/CommercialPage';
 import { DataImportsPage } from '../features/data/DataImportsPage';
+import { WeavingOverviewPage } from '../features/weaving/WeavingOverviewPage';
+import { LoomsPage } from '../features/weaving/LoomsPage';
+import { StoppagesPage } from '../features/weaving/StoppagesPage';
+import { FabricQualityPage } from '../features/weaving/FabricQualityPage';
+import { StylesPage } from '../features/weaving/StylesPage';
+import { PeoplePage } from '../features/weaving/PeoplePage';
 import { SystemStatusPage } from '../features/admin/SystemStatusPage';
 
 const NotFound: React.FC = () => (
@@ -51,6 +57,12 @@ export const router = createBrowserRouter([
           { path: '/', element: <ControlTowerPage /> },
           { path: '/actions', element: <ActionCenterPage /> },
           { path: '/production', element: <ProductionPage /> },
+          { path: '/weaving', element: <WeavingOverviewPage /> },
+          { path: '/weaving/looms', element: <LoomsPage /> },
+          { path: '/weaving/stoppages', element: <StoppagesPage /> },
+          { path: '/weaving/quality', element: <FabricQualityPage /> },
+          { path: '/weaving/styles', element: <StylesPage /> },
+          { path: '/weaving/people', element: <PeoplePage /> },
           { path: '/assets', element: <FleetPage /> },
           { path: '/assets/benchmark', element: <BenchmarkPage /> },
           { path: '/quality', element: <QualityPage /> },

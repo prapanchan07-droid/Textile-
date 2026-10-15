@@ -6,6 +6,7 @@ import {
   Factory,
   FlaskConical,
   ListChecks,
+  Shirt,
   UploadCloud,
   Users,
   type LucideIcon,
@@ -40,6 +41,7 @@ export const NAV: NavGroup[] = [
     label: 'Operations',
     items: [
       { to: '/production', label: 'Production', icon: Factory, keywords: 'output shift kg target' },
+      { to: '/weaving', label: 'Weaving', icon: Shirt, keywords: 'loom fabric airjet sulzer grade style stoppage weaver' },
       { to: '/assets', label: 'Machines & Downtime', icon: Activity, keywords: 'assets maintenance oee stoppage benchmark compare' },
     ],
   },

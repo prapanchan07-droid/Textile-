@@ -110,7 +110,7 @@ export const titleCase = (s: string) =>
 /* ------------------------------------------------------------------ Card */
 
 export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
-  <div className={cn('rounded-xl border border-line/90 bg-surface shadow-card', className)} {...props} />
+  <div className={cn('rounded-2xl border border-line/80 bg-surface shadow-card', className)} {...props} />
 );
 
 export const CardHeader: React.FC<{
@@ -152,16 +152,23 @@ export const Kpi: React.FC<KpiProps> = ({ label, value, hint, delta, status, onC
     <Comp
       onClick={onClick}
       className={cn(
-        'relative flex min-w-0 flex-col gap-1.5 rounded-xl border border-line/90 bg-surface p-4 text-left shadow-card',
-        onClick && 'hover:-translate-y-0.5 hover:border-line-strong hover:shadow-md transition-all',
+        'relative flex min-w-0 flex-col gap-1.5 overflow-hidden rounded-2xl border border-line/80 bg-surface p-4 text-left shadow-card',
+        onClick && 'transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift',
         className,
       )}
     >
+      <span
+        aria-hidden
+        className={cn(
+          'absolute inset-x-0 top-0 h-[3px]',
+          status === 'ok' ? 'bg-ok' : status === 'warn' ? 'bg-warn' : status === 'bad' ? 'bg-bad' : 'bg-accent/40',
+        )}
+      />
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-xs font-medium text-ink-3">{label}</span>
         {status && status !== 'neutral' && <ToneIcon tone={status} className={cn('size-3.5 shrink-0', toneClass[status].split(' ')[1])} />}
       </div>
-      <div className="truncate text-[22px] font-semibold leading-7 tracking-tight text-ink">{value}</div>
+      <div className="truncate text-2xl font-semibold leading-8 tracking-tight text-ink">{value}</div>
       <div className="flex min-h-4 flex-col gap-0.5 text-xs">
         {delta && (
           <span className={cn('inline-flex items-center gap-0.5 whitespace-nowrap font-medium', deltaTone)}>
@@ -280,7 +287,7 @@ export function Tabs<T extends string>({
   tabs: { value: T; label: string; count?: number }[];
 }) {
   return (
-    <div role="tablist" className="flex gap-4 border-b border-line">
+    <div role="tablist" className="flex w-full flex-wrap gap-1 rounded-xl bg-muted/70 p-1 sm:w-fit">
       {tabs.map((t) => (
         <button
           key={t.value}
@@ -288,8 +295,8 @@ export function Tabs<T extends string>({
           aria-selected={value === t.value}
           onClick={() => onChange(t.value)}
           className={cn(
-            '-mb-px flex items-center gap-1.5 border-b-2 pb-2 pt-1 text-sm font-medium transition-colors',
-            value === t.value ? 'border-accent text-ink' : 'border-transparent text-ink-3 hover:text-ink',
+            'flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all',
+            value === t.value ? 'bg-surface text-accent-ink shadow-card' : 'text-ink-3 hover:bg-surface/60 hover:text-ink',
           )}
         >
           {t.label}

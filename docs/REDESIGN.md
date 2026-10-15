@@ -101,13 +101,4 @@ Listed in priority order. None of these are shown in the UI yet, because showing
 
 ## 5. Cleanup
 
-The old UI is no longer referenced by `main.tsx`. Once the new version has been reviewed, delete these files and folders:
-
-```
-frontend/src/App.tsx
-frontend/src/components/
-frontend/src/pages/
-frontend/src/services/
-```
-
-`frontend/src/types/` is still used; it mirrors the backend schemas.
+Done: the old `App.tsx`, `components/`, `pages/` and `services/` were removed. `frontend/src/types/` is still used and mirrors the backend schemas.

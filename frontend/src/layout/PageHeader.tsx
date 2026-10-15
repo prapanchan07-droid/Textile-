@@ -20,8 +20,11 @@ export const PageHeader: React.FC<{
     <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-[26px]">{title}</h1>
-          {description && <p className="mt-1 text-sm text-ink-3">{description}</p>}
+          <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight text-ink sm:text-[28px]">
+            <span aria-hidden className="h-7 w-1.5 rounded-full bg-gradient-to-b from-accent to-ok" />
+            {title}
+          </h1>
+          {description && <p className="mt-1.5 pl-[18px] text-sm text-ink-3">{description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {actions}
