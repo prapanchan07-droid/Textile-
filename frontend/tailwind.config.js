@@ -41,7 +41,8 @@ export default {
         base: ['14px', '22px'],
       },
       boxShadow: {
-        card: '0 1px 2px 0 rgb(0 0 0 / 0.04)',
+        card: '0 1px 2px rgb(16 42 67 / 0.05), 0 6px 20px -8px rgb(16 42 67 / 0.10)',
+        lift: '0 2px 4px rgb(16 42 67 / 0.06), 0 14px 32px -10px rgb(16 42 67 / 0.18)',
         pop: '0 12px 32px -8px rgb(0 0 0 / 0.25), 0 2px 6px rgb(0 0 0 / 0.08)',
       },
       keyframes: {

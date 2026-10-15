@@ -1,0 +1,8 @@
+.git
+node_modules
+**/node_modules
+**/__pycache__
+**/uploaded_reports
+uploaded_reports
+*.db
+.env

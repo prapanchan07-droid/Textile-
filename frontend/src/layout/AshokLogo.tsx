@@ -19,7 +19,7 @@ export const AshokLogo: React.FC<{ compact?: boolean; className?: string }> = ({
       <path d="m19 53.6-5.2 8.4h22.9l-7.6-8.4H19Z" fill="#009bd4" />
     </svg>
     {!compact && (
-      <div className="min-w-0 leading-none text-[#202020]">
+      <div className="min-w-0 leading-none text-sidebar-ink">
         <div className="font-serif text-[20px] font-bold tracking-tight">ASHOK</div>
         <div className="mt-0.5 whitespace-nowrap font-serif text-[8px] font-semibold tracking-[0.015em]">Ashok Textile Mills Pvt Ltd</div>
       </div>

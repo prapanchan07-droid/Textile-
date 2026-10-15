@@ -10,6 +10,7 @@ services:
       - DATABASE_URL=sqlite:////app/data/ai_factory_manager.db
       - ENVIRONMENT=production
       - DEBUG=False
+      - CORS_ORIGINS=["http://localhost:5173"]
     env_file:
       - path: ./backend/.env
         required: false
@@ -35,6 +36,11 @@ services:
       backend:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
 
 volumes:
   factory_data:

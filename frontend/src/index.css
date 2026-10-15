@@ -130,7 +130,10 @@
   body {
     @apply bg-canvas text-ink font-sans text-sm antialiased;
     font-feature-settings: 'cv11', 'ss01';
-    background-image: radial-gradient(circle at 85% -10%, rgb(var(--accent) / 0.08), transparent 26rem);
+    background-image:
+      radial-gradient(circle at 88% -8%, rgb(var(--accent) / 0.10), transparent 28rem),
+      radial-gradient(circle at -5% 105%, rgb(var(--ok) / 0.06), transparent 24rem);
+    background-attachment: fixed;
   }
   :focus-visible {
     @apply outline-none ring-2 ring-accent/60 ring-offset-1 ring-offset-surface;
