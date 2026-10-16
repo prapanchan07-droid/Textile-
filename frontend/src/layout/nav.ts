@@ -1,16 +1,6 @@
-import {
-  Activity,
-  BadgeIndianRupee,
-  Gauge,
-  Cog,
-  Factory,
-  FlaskConical,
-  ListChecks,
-  Shirt,
-  UploadCloud,
-  Users,
-  type LucideIcon,
-} from 'lucide-react';
+import { Cog, UploadCloud, type LucideIcon } from 'lucide-react';
+import { sectionsFor } from '../features/weaving/sections';
+import type { AuthUser } from '../types/auth';
 
 export interface NavItem {
   to: string;
@@ -26,43 +16,31 @@ export interface NavGroup {
 }
 
 /**
- * Grouped by who uses it: leadership (Command), plant heads (Operations),
- * functional owners (Quality, People, Commercial), and admins (Data, Admin).
+ * Navigation is built from the signed-in user's role: weaving pages first
+ * (their role's pages only), then platform tools for the people who run them.
  */
-export const NAV: NavGroup[] = [
-  {
-    label: 'Command',
-    items: [
-      { to: '/', label: 'Control Tower', icon: Gauge, keywords: 'overview dashboard home summary' },
-      { to: '/actions', label: 'Action Center', icon: ListChecks, keywords: 'decision priority tasks tracker' },
-    ],
-  },
-  {
-    label: 'Operations',
-    items: [
-      { to: '/production', label: 'Production', icon: Factory, keywords: 'output shift kg target' },
-      { to: '/weaving', label: 'Weaving', icon: Shirt, keywords: 'loom fabric airjet sulzer grade style stoppage weaver' },
-      { to: '/assets', label: 'Machines & Downtime', icon: Activity, keywords: 'assets maintenance oee stoppage benchmark compare' },
-    ],
-  },
-  {
-    label: 'Functions',
-    items: [
-      { to: '/quality', label: 'Quality', icon: FlaskConical, keywords: 'lab yarn uster thick neps cv' },
-      { to: '/workforce', label: 'Workforce', icon: Users, keywords: 'manpower attendance hr shortage' },
-      { to: '/commercial', label: 'Sales & Finance', icon: BadgeIndianRupee, keywords: 'revenue dispatch receivables stock orders' },
-    ],
-  },
-  {
-    label: 'Platform',
-    items: [
-      { to: '/data', label: 'Data Imports', icon: UploadCloud, keywords: 'upload report template ingestion excel' },
-      { to: '/admin/system', label: 'System Status', icon: Cog, keywords: 'health settings version database' },
-    ],
-  },
-];
+export const buildNav = (user: AuthUser | null): NavGroup[] => {
+  if (!user) return [];
+  const groups: NavGroup[] = [];
+  for (const sec of sectionsFor(user)) {
+    let g = groups.find((x) => x.label === sec.group);
+    if (!g) groups.push((g = { label: sec.group, items: [] }));
+    g.items.push({ to: sec.path, label: sec.label, icon: sec.icon, keywords: sec.keywords });
+  }
+  if (user.role === 'OWNER' || user.role === 'WEAVING_MANAGER') {
+    groups.push({
+      label: 'Platform',
+      items: [
+        { to: '/data', label: 'Data Imports', icon: UploadCloud, keywords: 'upload report template ingestion excel' },
+        { to: '/admin/system', label: 'System Status', icon: Cog, keywords: 'health settings version database' },
+      ],
+    });
+  }
+  return groups;
+};
 
-export const ALL_NAV = NAV.flatMap((g) => g.items);
-
-export const findNav = (pathname: string) =>
-  ALL_NAV.filter((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to))).sort((a, b) => b.to.length - a.to.length)[0];
+export const findNav = (groups: NavGroup[], pathname: string) =>
+  groups
+    .flatMap((g) => g.items)
+    .filter((i) => pathname.startsWith(i.to))
+    .sort((a, b) => b.to.length - a.to.length)[0];

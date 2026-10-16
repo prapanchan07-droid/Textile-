@@ -2,21 +2,24 @@ import React from 'react';
 import { createBrowserRouter, Link, useRouteError } from 'react-router-dom';
 import { AppShell } from '../layout/AppShell';
 import { Button, Card, EmptyState } from '../design/ui';
-import { ControlTowerPage } from '../features/control-tower/ControlTowerPage';
-import { ActionCenterPage } from '../features/actions/ActionCenterPage';
-import { ProductionPage } from '../features/production/ProductionPage';
-import { FleetPage } from '../features/assets/FleetPage';
-import { BenchmarkPage } from '../features/assets/BenchmarkPage';
-import { QualityPage } from '../features/quality/QualityPage';
-import { WorkforcePage } from '../features/workforce/WorkforcePage';
-import { CommercialPage } from '../features/commercial/CommercialPage';
+import { LoginPage } from '../auth/LoginPage';
+import { HomeRedirect, RequireAuth, RequireSection } from '../auth/guards';
+import { CommandPage } from '../features/weaving/command/CommandPage';
+import { OwnerPage } from '../features/weaving/owner/OwnerPage';
+import { ProductionPage } from '../features/weaving/production/ProductionPage';
+import { StoppagesPage } from '../features/weaving/stoppages/StoppagesPage';
+import { MachinesPage } from '../features/weaving/machines/MachinesPage';
+import { MaintenancePage } from '../features/weaving/maintenance/MaintenancePage';
+import { WorkforcePage } from '../features/weaving/workforce/WorkforcePage';
+import { CockpitPage } from '../features/weaving/cockpit/CockpitPage';
+import { HandoverPage } from '../features/weaving/handover/HandoverPage';
+import { OrdersPage } from '../features/weaving/orders/OrdersPage';
+import { SchedulerPage } from '../features/weaving/scheduler/SchedulerPage';
+import { InsightsPage } from '../features/weaving/insights/InsightsPage';
+import { ComparePage } from '../features/weaving/compare/ComparePage';
+import { QualityPage } from '../features/weaving/quality/QualityPage';
+import { ActionsPage } from '../features/weaving/actions/ActionsPage';
 import { DataImportsPage } from '../features/data/DataImportsPage';
-import { WeavingOverviewPage } from '../features/weaving/WeavingOverviewPage';
-import { LoomsPage } from '../features/weaving/LoomsPage';
-import { StoppagesPage } from '../features/weaving/StoppagesPage';
-import { FabricQualityPage } from '../features/weaving/FabricQualityPage';
-import { StylesPage } from '../features/weaving/StylesPage';
-import { PeoplePage } from '../features/weaving/PeoplePage';
 import { SystemStatusPage } from '../features/admin/SystemStatusPage';
 
 const NotFound: React.FC = () => (
@@ -26,7 +29,7 @@ const NotFound: React.FC = () => (
       description="This address doesn't match any page."
       action={
         <Link to="/">
-          <Button>Go to Control Tower</Button>
+          <Button>Go to my home page</Button>
         </Link>
       }
     />
@@ -47,30 +50,43 @@ const PageError: React.FC = () => {
   );
 };
 
+const section = (slug: Parameters<typeof RequireSection>[0]['section'], page: React.ReactNode) => (
+  <RequireSection section={slug}>{page}</RequireSection>
+);
+
 export const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
   {
-    element: <AppShell />,
+    element: <RequireAuth />,
     children: [
       {
-        errorElement: <PageError />,
+        element: <AppShell />,
         children: [
-          { path: '/', element: <ControlTowerPage /> },
-          { path: '/actions', element: <ActionCenterPage /> },
-          { path: '/production', element: <ProductionPage /> },
-          { path: '/weaving', element: <WeavingOverviewPage /> },
-          { path: '/weaving/looms', element: <LoomsPage /> },
-          { path: '/weaving/stoppages', element: <StoppagesPage /> },
-          { path: '/weaving/quality', element: <FabricQualityPage /> },
-          { path: '/weaving/styles', element: <StylesPage /> },
-          { path: '/weaving/people', element: <PeoplePage /> },
-          { path: '/assets', element: <FleetPage /> },
-          { path: '/assets/benchmark', element: <BenchmarkPage /> },
-          { path: '/quality', element: <QualityPage /> },
-          { path: '/workforce', element: <WorkforcePage /> },
-          { path: '/commercial', element: <CommercialPage /> },
-          { path: '/data', element: <DataImportsPage /> },
-          { path: '/admin/system', element: <SystemStatusPage /> },
-          { path: '*', element: <NotFound /> },
+          {
+            errorElement: <PageError />,
+            children: [
+              { path: '/', element: <HomeRedirect /> },
+              { path: '/weaving', element: <HomeRedirect /> },
+              { path: '/weaving/owner', element: section('owner', <OwnerPage />) },
+              { path: '/weaving/command', element: section('command', <CommandPage />) },
+              { path: '/weaving/cockpit', element: section('cockpit', <CockpitPage />) },
+              { path: '/weaving/maintenance', element: section('maintenance', <MaintenancePage />) },
+              { path: '/weaving/quality', element: section('quality', <QualityPage />) },
+              { path: '/weaving/production', element: section('production', <ProductionPage />) },
+              { path: '/weaving/stoppages', element: section('stoppages', <StoppagesPage />) },
+              { path: '/weaving/machines', element: section('machines', <MachinesPage />) },
+              { path: '/weaving/workforce', element: section('workforce', <WorkforcePage />) },
+              { path: '/weaving/handover', element: section('handover', <HandoverPage />) },
+              { path: '/weaving/orders', element: section('orders', <OrdersPage />) },
+              { path: '/weaving/scheduler', element: section('scheduler', <SchedulerPage />) },
+              { path: '/weaving/insights', element: section('insights', <InsightsPage />) },
+              { path: '/weaving/compare', element: section('compare', <ComparePage />) },
+              { path: '/weaving/actions', element: section('actions', <ActionsPage />) },
+              { path: '/data', element: <DataImportsPage /> },
+              { path: '/admin/system', element: <SystemStatusPage /> },
+              { path: '*', element: <NotFound /> },
+            ],
+          },
         ],
       },
     ],

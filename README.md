@@ -39,12 +39,14 @@ An AI-powered textile factory management, real-data report ingestion, and decisi
 ## 🐳 Run with Docker
 
 ```bash
+cp .env.example .env     # set POSTGRES_PASSWORD and SECRET_KEY first (see the file)
 docker compose up -d --build
 ```
 
 - App: http://localhost:5173 (nginx serves the UI and proxies `/api/` to the backend)
 - API docs: http://localhost:8000/api/v1/docs
-- Data lives in the named volumes `factory_data` (SQLite) and `factory_reports` (uploads). `docker compose down` keeps them; add `-v` to wipe them.
+- Data lives in PostgreSQL (`postgres_data` volume) and the `factory_reports` volume (uploads); `factory_data` still holds the old SQLite file for the one-time copy. `docker compose down` keeps them; **`-v` deletes the database**.
+- Migrations run in the backend entrypoint. Backup, restore, migration and the SQLite-to-PostgreSQL copy are in [docs/database.md](docs/database.md).
 - The backend drops to a non-root user at start-up. `.dockerignore` files keep `uploaded_reports/`, `.env` and `node_modules` out of the images.
 
 ---
@@ -54,7 +56,8 @@ docker compose up -d --build
 ```
 FRONTEND (React + Vite + TypeScript + Tailwind CSS)
     ↓ REST API (Axios Async Client)
-BACKEND (FastAPI + Pydantic v2 + SQLAlchemy + SQLite)
+BACKEND (FastAPI + Pydantic v2 + SQLAlchemy + Alembic + PostgreSQL)
+    ↓ Weaving analytics: SQL + statistics -> evidence-backed findings (docs/weaving-intelligence.md)
     ↓ Processing Engine
 DATA INGESTION (Pandas + OpenPyXL + PyPDF + Pillow + Normalizer)
 ```
@@ -83,15 +86,21 @@ python -m venv .venv
 # On macOS/Linux:
 source .venv/bin/activate
 
-# Install Python dependencies
-pip install -r requirements.txt
+# Install Python dependencies (requirements-dev.txt adds the test tools)
+pip install -r requirements-dev.txt
 
-# (Optional) Copy environment variables template
+# Configure the database: copy the template and set POSTGRES_PASSWORD (or DATABASE_URL)
 cp .env.example .env
 
-# Launch FastAPI development server
+# Launch FastAPI development server (applies migrations on start-up when AUTO_MIGRATE=true)
 python -m uvicorn app.main:app --reload --port 8000
+
+# Optional: DEMONSTRATION weaving data for development (refuses to run when ENVIRONMENT=production)
+python -m app.weaving.seed demo --days 21        # add --reset-demo to reload after a data change
 ```
+
+You need a PostgreSQL 16 server (for example `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=... postgres:16-alpine`).
+If you have an old `ai_factory_manager.db`, copy it across with the tool described in [docs/database.md](docs/database.md): changing the database URL does not move data.
 
 - **Backend API**: `http://localhost:8000`
 - **Interactive Swagger Documentation**: [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs)
@@ -127,9 +136,11 @@ Textile/
 ├── backend/                        # FastAPI backend
 │   ├── app/
 │   │   ├── api/v1/                 # Endpoints (production, ingestion, overview, weaving, ...)
-│   │   ├── core/ db/ models/       # Config, database, ORM models
+│   │   ├── core/ db/ models/       # Config, database, migrations runner, ORM models
+│   │   ├── weaving/                # Weaving schema, analytics (metrics, investigations), demo seed
 │   │   ├── schemas/                # Pydantic schemas
-│   │   └── services/               # Ingestion, template, module services (weaving_service.py)
+│   │   └── services/               # Ingestion, template and legacy module services
+│   ├── alembic/ tests/             # Migrations; test suite
 │   ├── uploaded_reports/           # Upload staging (git-ignored; may hold employee data)
 │   ├── Dockerfile, requirements.txt, .env.example
 ├── frontend/                       # React + Vite + TypeScript
@@ -138,7 +149,7 @@ Textile/
 │       ├── features/               # One folder per page group (weaving, production, quality, ...)
 │       ├── api/ lib/ types/        # React Query hooks, formatters, backend types
 │   ├── Dockerfile, nginx.conf
-└── docs/REDESIGN.md                # Redesign decisions
+└── docs/                           # database.md, weaving-intelligence.md, REDESIGN.md
 ```
 
 ---
@@ -151,11 +162,13 @@ cd frontend
 npm run build
 ```
 
-### Run Clean Database & Ingestion Test
+### Backend tests
 ```bash
-# From workspace root
-python -c "from app.db.session import SessionLocal; print('DB connection verified!')"
+createdb textile_test        # a DEDICATED database; its name must end in _test (the suite recreates its schema)
+cd backend
+TEST_DATABASE_URL="postgresql+psycopg://USER:PASSWORD@localhost:5432/textile_test" python -m pytest
 ```
+Without `TEST_DATABASE_URL` the PostgreSQL tests are skipped (and reported as skipped).
 
 ---
 
@@ -167,11 +180,18 @@ python -c "from app.db.session import SessionLocal; print('DB connection verifie
 | `GET` | `/api/v1/ingestion/job/{job_id}` | Poll progress status for an active ingestion job |
 | `GET` | `/api/v1/production` | Get reconciled production metrics for date and unit |
 | `GET` | `/api/v1/production/lineage` | Trace data lineage for production metrics back to source file/row |
-| `GET` | `/api/v1/weaving?period=` | Weaving module data (mock): KPIs, decisions, looms, stoppages, quality, styles, people |
+| `POST` | `/api/v1/auth/login` | Sign in; every weaving route needs the returned bearer token |
+| `GET` | `/api/v1/weaving/pages/{page}` | One payload per sidebar page (command, owner, production, stoppages, machines, workforce, orders, scheduler, insights, quality, cockpit, handover, maintenance, actions, compare), computed from the database for the caller's role |
+| `GET` | `/api/v1/weaving/analytics/{production,stoppages,quality}?group_by=` | Metrics by loom, style, beam, shift, day, cause... |
+| `GET` | `/api/v1/weaving/investigations/{findings,priorities}` | Evidence-backed findings and "what to focus on today" for the caller's role |
+| `GET` | `/api/v1/weaving/events/stops`, `/inspections` | Paginated event lists |
+| `GET` | `/api/v1/weaving/compare/run` | Compare looms, styles, shifts, yarn lots, suppliers side by side (tested differences) |
+| `POST` | `/api/v1/weaving/scheduler/decision` | Approve or reject the AI-proposed schedule (owner / weaving manager). Approval records it and raises actions; it moves no loom |
+| `POST` | `/api/v1/weaving/actions`, `/notes` | Record actions (approval rules apply) and shift notes |
 | `GET` | `/api/v1/health` | System health check and database connectivity status |
 
 ---
 
 ## 👥 Collaborator Notes
-- `.gitignore` ensures that database files (`ai_factory_manager.db`), python `__pycache__`, virtual environments (`.venv`), and `node_modules/` remain uncommitted.
+- `.gitignore` ensures that database files (`ai_factory_manager.db`), database dumps (`*.dump`, `backups/`), python `__pycache__`, virtual environments (`.venv`), and `node_modules/` remain uncommitted.
 - Environment templates are committed as `.env.example` in both `backend/` and `frontend/`.

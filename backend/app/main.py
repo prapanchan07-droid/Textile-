@@ -21,7 +21,9 @@ async def lifespan(app: FastAPI):
         init_db()
         logger.info("Database initialized successfully.")
     except Exception as e:
+        # Starting against a database we could not prepare would fail on every request; stop instead.
         logger.error(f"Database initialization error: {str(e)}")
+        raise
     yield
     logger.info("Shutting down backend services...")
 

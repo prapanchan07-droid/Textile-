@@ -28,8 +28,17 @@ export const pct = (v: number | null | undefined, digits = 1) => (v == null || N
 export const signed = (v: number, fmt: (n: number) => string) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${fmt(Math.abs(v))}`;
 
 /** Backend money fields are in lakhs. Show crores once a value crosses ₹1 Cr. */
+/**
+ * Roles without financial access get zeroed money fields from the API. The weaving page frame records that here
+ * so every rupee figure renders as a dash instead of a misleading ₹0.
+ */
+let moneyVisible = true;
+export const setMoneyVisible = (v: boolean) => {
+  moneyVisible = v;
+};
+
 export const inrFromLakhs = (lakhs: number | null | undefined) => {
-  if (lakhs == null) return '—';
+  if (lakhs == null || !moneyVisible) return '—';
   const abs = Math.abs(lakhs);
   if (abs < 0.05) return '₹0 L';
   if (abs >= 100) return `₹${nf1.format(lakhs / 100)} Cr`;

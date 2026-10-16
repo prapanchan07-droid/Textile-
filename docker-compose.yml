@@ -1,4 +1,23 @@
+# Production-style stack: PostgreSQL + API + web. Copy .env.example to .env and set the secrets first.
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: ai-factory-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-textile}
+      POSTGRES_USER: ${POSTGRES_USER:-textile}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    # Not published to the host on purpose. To reach it from your machine, add a `ports:` mapping in docker-compose.override.yml.
+
   backend:
     build:
       context: ./backend
@@ -7,23 +26,36 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:////app/data/ai_factory_manager.db
-      - ENVIRONMENT=production
+      # The app builds its connection URL from these (special characters in the password are fine).
+      # Blank on purpose: a DATABASE_URL in backend/.env (local dev, points at 127.0.0.1) must not leak into the container.
+      - DATABASE_URL=
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-textile}
+      - POSTGRES_USER=${POSTGRES_USER:-textile}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env (see .env.example)}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
       - DEBUG=False
-      - CORS_ORIGINS=["http://localhost:5173"]
+      # Migrations run in the container entrypoint (alembic upgrade head), not at API start-up.
+      - AUTO_MIGRATE=false
     env_file:
       - path: ./backend/.env
         required: false
     volumes:
+      # /app/data still holds the old SQLite file for the one-time copy into PostgreSQL (docs/database.md), and database backups.
       - factory_data:/app/data
       - factory_reports:/app/uploaded_reports
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
 
   frontend:
     build:
@@ -36,12 +68,8 @@ services:
       backend:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
-      interval: 20s
-      timeout: 5s
-      retries: 3
 
 volumes:
+  postgres_data:
   factory_data:
   factory_reports:

@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePeriod } from '../app/state';
-import { PERIODS } from '../lib/period';
+import { PERIODS, type Period } from '../lib/period';
 import { Segmented } from '../design/ui';
 
 /**
@@ -12,10 +12,12 @@ export const PageHeader: React.FC<{
   title: string;
   description?: React.ReactNode;
   showPeriod?: boolean;
+  /** Period shown when the address has none (pages that need a longer window than today). */
+  defaultPeriod?: Period;
   actions?: React.ReactNode;
   tabs?: React.ReactNode;
-}> = ({ title, description, showPeriod, actions, tabs }) => {
-  const [period, setPeriod] = usePeriod();
+}> = ({ title, description, showPeriod, defaultPeriod, actions, tabs }) => {
+  const [period, setPeriod] = usePeriod(defaultPeriod);
   return (
     <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">

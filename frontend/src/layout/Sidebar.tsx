@@ -2,7 +2,8 @@ import React from 'react';
 import { NavLink, useSearchParams } from 'react-router-dom';
 import { ChevronsLeft, ChevronsRight, CircleDot, X } from 'lucide-react';
 import { cn } from '../lib/format';
-import { NAV } from './nav';
+import { useAuth } from '../auth/AuthContext';
+import { buildNav } from './nav';
 import { AshokLogo } from './AshokLogo';
 
 export const Sidebar: React.FC<{
@@ -11,6 +12,8 @@ export const Sidebar: React.FC<{
   mobileOpen: boolean;
   onCloseMobile: () => void;
 }> = ({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobile }) => {
+  const { user } = useAuth();
+  const nav = React.useMemo(() => buildNav(user), [user]);
   const [params] = useSearchParams();
   // Carry the reporting period across pages; drop page-specific params.
   const period = params.get('period');
@@ -34,7 +37,7 @@ export const Sidebar: React.FC<{
         </div>
 
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5" aria-label="Main">
-          {NAV.map((group) => (
+          {nav.map((group) => (
             <div key={group.label}>
               {!narrow ? (
                 <div className="mb-2 px-2 text-2xs font-semibold uppercase tracking-[0.14em] text-sidebar-ink-2/70">{group.label}</div>
@@ -46,7 +49,7 @@ export const Sidebar: React.FC<{
                   <li key={item.to}>
                     <NavLink
                       to={{ pathname: item.to, search }}
-                      end={item.to === '/'}
+                      end={item.to === '/weaving'}
                       onClick={isMobile ? onCloseMobile : undefined}
                       title={narrow ? item.label : undefined}
                       className={({ isActive }) =>

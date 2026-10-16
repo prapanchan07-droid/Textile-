@@ -1,10 +1,32 @@
 import axios, { AxiosError } from 'axios';
 import type { StandardResponse } from '../types/api';
+import { clearToken, getToken } from '../auth/token';
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 120_000,
 });
+
+http.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+/** Fired when the API rejects our token, so the app can send the user back to sign in. */
+export const UNAUTHORIZED_EVENT = 'auth:unauthorized';
+
+http.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    // A failed sign-in is also a 401, but the login form shows that error itself.
+    if (err?.response?.status === 401 && !String(err.config?.url).includes('/auth/login')) {
+      clearToken();
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
+    return Promise.reject(err);
+  },
+);
 
 export class ApiError extends Error {
   constructor(
@@ -38,6 +60,16 @@ export async function getData<T>(url: string, params?: Record<string, unknown>):
     if (!res.data.success || res.data.data == null) {
       throw new ApiError(res.data.error?.message || 'The server returned no data', res.status, res.data.error?.code);
     }
+    return res.data.data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function postJson<T>(url: string, body: unknown): Promise<T> {
+  try {
+    const res = await http.post<StandardResponse<T>>(url, body);
+    if (res.data.data == null) throw new ApiError(res.data.error?.message || 'Request failed', res.status);
     return res.data.data;
   } catch (err) {
     throw toApiError(err);

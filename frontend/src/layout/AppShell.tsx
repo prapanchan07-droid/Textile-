@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Bell, Menu, Monitor, Moon, Search, Sun, UploadCloud } from 'lucide-react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Bell, LogOut, Menu, Monitor, Moon, Search, Sun, UploadCloud } from 'lucide-react';
 import { cn, relativeTime } from '../lib/format';
 import { useHealth, useImportHistory } from '../api/queries';
 import { useTheme, type ThemePref } from '../app/state';
 import { Button } from '../design/ui';
 import { Sidebar } from './Sidebar';
 import { CommandPalette } from './CommandPalette';
-import { findNav } from './nav';
+import { useAuth } from '../auth/AuthContext';
+import { buildNav, findNav } from './nav';
 
 const readCollapsed = () => {
   try {
@@ -78,14 +79,17 @@ export const AppShell: React.FC = () => {
 
 const Topbar: React.FC<{ onOpenMenu: () => void; onOpenPalette: () => void }> = ({ onOpenMenu, onOpenPalette }) => {
   const health = useHealth();
-  const history = useImportHistory();
+  const { user } = useAuth();
+  // Import history is management-only on the server; other roles would just get a 403.
+  const history = useImportHistory(user?.role === 'OWNER' || user?.role === 'WEAVING_MANAGER');
   const lastImport = history.data
     ?.map((h) => h.upload_timestamp)
     .sort()
     .slice(-1)[0];
   const online = health.isSuccess && health.data.status === 'healthy';
   const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
-  const activePage = findNav(location.pathname);
+  const activePage = findNav(buildNav(user), location.pathname);
+  const canImport = user?.role === 'OWNER' || user?.role === 'WEAVING_MANAGER';
 
   return (
     <header className="flex h-[66px] shrink-0 items-center gap-3 border-b border-line/80 border-t-[3px] border-t-[#5a3828] bg-surface/95 px-4 backdrop-blur sm:px-7">
@@ -104,7 +108,7 @@ const Topbar: React.FC<{ onOpenMenu: () => void; onOpenPalette: () => void }> = 
 
       <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
         <span className="h-5 w-px bg-line" />
-        <span className="truncate text-sm font-medium text-ink">{activePage?.label ?? 'Operations'}</span>
+        <span className="truncate text-sm font-medium text-ink">{activePage?.label ?? 'Weaving'}</span>
       </div>
 
       <Link
@@ -120,7 +124,9 @@ const Topbar: React.FC<{ onOpenMenu: () => void; onOpenPalette: () => void }> = 
               ? 'API offline'
               : lastImport
                 ? `Data imported ${relativeTime(lastImport)}`
-                : 'No reports imported yet'}
+                : user?.role === 'OWNER' || user?.role === 'WEAVING_MANAGER'
+                  ? 'No reports imported yet'
+                  : 'Connected'}
         </span>
       </Link>
 
@@ -131,12 +137,50 @@ const Topbar: React.FC<{ onOpenMenu: () => void; onOpenPalette: () => void }> = 
         <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-bad ring-2 ring-surface" />
       </button>
 
-      <Link to="/data">
-        <Button variant="primary" icon={<UploadCloud className="size-4" />}>
-          <span className="hidden sm:inline">Import data</span>
-        </Button>
-      </Link>
+      {canImport && (
+        <Link to="/data">
+          <Button variant="primary" icon={<UploadCloud className="size-4" />}>
+            <span className="hidden sm:inline">Import data</span>
+          </Button>
+        </Link>
+      )}
+
+      <UserMenu />
     </header>
+  );
+};
+
+const UserMenu: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  if (!user) return null;
+  const initials = user.full_name
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+  return (
+    <div className="flex items-center gap-2.5 border-l border-line pl-3">
+      <div className="hidden text-right leading-tight md:block">
+        <div className="text-sm font-medium text-ink">{user.full_name}</div>
+        <div className="text-2xs text-ink-3">{user.role_label}</div>
+      </div>
+      <span className="grid size-8 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent" aria-hidden>
+        {initials}
+      </span>
+      <button
+        onClick={() => {
+          logout();
+          navigate('/login', { replace: true });
+        }}
+        className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-muted hover:text-ink"
+        aria-label="Sign out"
+        title="Sign out"
+      >
+        <LogOut className="size-4" />
+      </button>
+    </div>
   );
 };
 

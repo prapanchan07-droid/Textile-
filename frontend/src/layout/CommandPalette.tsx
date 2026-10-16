@@ -3,9 +3,10 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Cpu, CornerDownLeft, FileSpreadsheet, Moon, Search, Sun, UploadCloud } from 'lucide-react';
 import { cn } from '../lib/format';
-import { useMachines } from '../api/queries';
+import { useFleet } from '../api/weaving';
 import { useTheme } from '../app/state';
-import { ALL_NAV } from './nav';
+import { useAuth } from '../auth/AuthContext';
+import { buildNav } from './nav';
 
 interface Command {
   id: string;
@@ -24,8 +25,10 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
-  // Month-to-date is the widest window, so it lists every machine in the master.
-  const machines = useMachines('THIS_MONTH');
+  const { user } = useAuth();
+  const nav = useMemo(() => buildNav(user), [user]);
+  // Looms are the same in every period; any window lists them all.
+  const fleet = useFleet(!!user?.sections.includes('machines'));
 
   useEffect(() => {
     if (open) {
@@ -38,7 +41,7 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
   const commands = useMemo<Command[]>(() => {
     const go = (path: string) => () => navigate(path);
     return [
-      ...ALL_NAV.map((n) => ({
+      ...nav.flatMap((g) => g.items).map((n) => ({
         id: `nav:${n.to}`,
         group: 'Pages',
         label: n.label,
@@ -46,16 +49,16 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
         icon: <n.icon className="size-4" />,
         run: go(n.to),
       })),
-      ...(machines.data?.all_machines ?? []).map((m) => ({
-        id: `m:${m.machine_id}`,
-        group: 'Machines',
-        label: m.machine_id,
-        hint: m.machine_type,
-        keywords: m.machine_type,
+      ...(fleet.data?.looms ?? []).map((l) => ({
+        id: `loom:${l.loom}`,
+        group: 'Looms',
+        label: l.loom,
+        hint: `${l.type} · ${l.style}`,
+        keywords: `${l.type} ${l.make ?? ''} ${l.model ?? ''}`,
         icon: <Cpu className="size-4" />,
-        run: go(`/assets?machine=${encodeURIComponent(m.machine_id)}`),
+        run: go(`/weaving/machines?loom=${encodeURIComponent(l.loom)}`),
       })),
-      {
+      ...(user && (user.role === 'OWNER' || user.role === 'WEAVING_MANAGER') ? [{
         id: 'act:import',
         group: 'Actions',
         label: 'Import factory reports',
@@ -70,7 +73,7 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
         keywords: 'download xlsx',
         icon: <FileSpreadsheet className="size-4" />,
         run: go('/data#template'),
-      },
+      }] : []),
       {
         id: 'act:theme',
         group: 'Actions',
@@ -80,7 +83,7 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
         run: () => setTheme(resolved === 'dark' ? 'light' : 'dark'),
       },
     ];
-  }, [machines.data, navigate, resolved, setTheme]);
+  }, [nav, user, fleet.data, navigate, resolved, setTheme]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -131,7 +134,7 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
             ref={input}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search pages, machines, actions…"
+            placeholder="Search pages, looms, actions…"
             className="h-11 flex-1 bg-transparent text-sm text-ink placeholder:text-ink-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             role="combobox"
             aria-expanded="true"

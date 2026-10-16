@@ -21,11 +21,12 @@ const safeSet = (k: string, v: string) => {
  * The reporting period is a URL parameter so any view can be shared or bookmarked
  * exactly as seen. The last choice is remembered as the default for new visits.
  */
-export function usePeriod(): [Period, (p: Period) => void] {
+export function usePeriod(fallback?: Period): [Period, (p: Period) => void] {
   const [params, setParams] = useSearchParams();
   const raw = params.get('period');
   const stored = safeGet('period');
-  const period: Period = isPeriod(raw) ? raw : isPeriod(stored) ? stored : 'TODAY';
+  // Pages that need a longer window (quality, owner, insights) pass their own default, which a remembered choice does not override.
+  const period: Period = isPeriod(raw) ? raw : fallback ?? (isPeriod(stored) ? stored : 'TODAY');
 
   const setPeriod = useCallback(
     (p: Period) => {
