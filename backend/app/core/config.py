@@ -44,6 +44,17 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: str = "INFO"
 
+    # Uploaded report files are kept here unmodified (git-ignored; may contain operator names).
+    UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploaded_reports")
+    MAX_UPLOAD_MB: int = 25
+
+    # Background loop: alert escalation / deadline checks and the telemetry collector.
+    BACKGROUND_JOBS_ENABLED: bool = True
+    BACKGROUND_INTERVAL_SECONDS: int = 60
+    TELEMETRY_RETENTION_DAYS: int = 30
+    # Live data older than this is shown as STALE, never as live.
+    TELEMETRY_STALE_SECONDS: int = 300
+
     @property
     def demo_users_enabled(self) -> bool:
         return self.SEED_DEMO_USERS and self.ENVIRONMENT.lower() != "production"

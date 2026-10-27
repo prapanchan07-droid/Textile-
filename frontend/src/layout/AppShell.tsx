@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Menu, Monitor, Moon, Sun } from 'lucide-react';
+import { LogOut, Menu, Monitor, Moon, Sun } from 'lucide-react';
 import { cn } from '../lib/format';
 import { useHealth } from '../api/queries';
 import { useTheme, type ThemePref } from '../app/state';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../auth/AuthContext';
 import { buildNav, findNav } from './nav';
+import { NotificationBell } from './NotificationBell';
 
 const readCollapsed = () => {
   try {
@@ -89,10 +90,7 @@ const Topbar: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
 
       <ThemeToggle />
 
-      <button className="relative rounded-lg p-2 text-ink-2 transition-colors hover:bg-muted hover:text-ink" aria-label="Notifications">
-        <Bell className="size-4" />
-        <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-bad ring-2 ring-surface" />
-      </button>
+      <NotificationBell />
 
       <UserMenu />
     </header>

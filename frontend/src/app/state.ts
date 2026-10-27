@@ -25,8 +25,8 @@ export function usePeriod(fallback?: Period): [Period, (p: Period) => void] {
   const [params, setParams] = useSearchParams();
   const raw = params.get('period');
   const stored = safeGet('period');
-  // Pages that need a longer window (quality, owner, insights) pass their own default, which a remembered choice does not override.
-  const period: Period = isPeriod(raw) ? raw : fallback ?? (isPeriod(stored) ? stored : 'TODAY');
+  // A page may pass its own default, which a remembered choice does not override.
+  const period: Period = isPeriod(raw) ? raw : fallback ?? (isPeriod(stored) && stored !== 'custom' ? stored : '30d');
 
   const setPeriod = useCallback(
     (p: Period) => {

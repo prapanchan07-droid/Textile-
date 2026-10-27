@@ -13,6 +13,7 @@ from app.core.exceptions import (
 )
 from app.db.init_db import init_db
 from app.api.v1.router import api_router
+from app.mill import jobs
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,13 +25,15 @@ async def lifespan(app: FastAPI):
         # Starting against a database we could not prepare would fail on every request; stop instead.
         logger.error(f"Database initialization error: {str(e)}")
         raise
+    jobs.start()
     yield
+    jobs.stop()
     logger.info("Shutting down backend services...")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="AI-powered textile factory management & decision-support system for Ashok Textiles",
+    description="Weaving operations intelligence for the mill: imports, analytics, alerts, groups, maintenance and owner reports",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url=f"{settings.API_V1_STR}/docs",
     redoc_url=f"{settings.API_V1_STR}/redoc",

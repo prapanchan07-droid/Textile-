@@ -85,3 +85,32 @@ export async function postForm<T>(url: string, form: FormData): Promise<T> {
     throw toApiError(err);
   }
 }
+
+async function send<T>(method: 'put' | 'patch' | 'delete', url: string, body?: unknown): Promise<T> {
+  try {
+    const res = await http.request<StandardResponse<T>>({ method, url, data: body });
+    if (res.data.data == null) throw new ApiError(res.data.error?.message || 'Request failed', res.status);
+    return res.data.data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export const putJson = <T>(url: string, body: unknown) => send<T>('put', url, body);
+export const patchJson = <T>(url: string, body: unknown) => send<T>('patch', url, body);
+export const deleteJson = <T>(url: string) => send<T>('delete', url);
+
+/** Download a file the API produces (e.g. a report export) with the signed-in user's token. */
+export async function downloadFile(url: string, filename: string): Promise<void> {
+  try {
+    const res = await http.get(url, { responseType: 'blob' });
+    const href = URL.createObjectURL(res.data as Blob);
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(href);
+  } catch (err) {
+    throw toApiError(err);
+  }
+}

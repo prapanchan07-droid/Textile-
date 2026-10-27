@@ -4,6 +4,7 @@ import { ChevronsLeft, ChevronsRight, CircleDot, X } from 'lucide-react';
 import { cn } from '../lib/format';
 import { useAuth } from '../auth/AuthContext';
 import { buildNav } from './nav';
+import { useMeta } from '../api/mill';
 import { AshokLogo } from './AshokLogo';
 
 export const Sidebar: React.FC<{
@@ -14,6 +15,8 @@ export const Sidebar: React.FC<{
 }> = ({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobile }) => {
   const { user } = useAuth();
   const nav = React.useMemo(() => buildNav(user), [user]);
+  const meta = useMeta();
+  const last = meta.data?.data_range.last;
   const [params] = useSearchParams();
   // Carry the reporting period across pages; drop page-specific params.
   const period = params.get('period');
@@ -49,7 +52,7 @@ export const Sidebar: React.FC<{
                   <li key={item.to}>
                     <NavLink
                       to={{ pathname: item.to, search }}
-                      end={item.to === '/weaving'}
+                      end={item.to === '/'}
                       onClick={isMobile ? onCloseMobile : undefined}
                       title={narrow ? item.label : undefined}
                       className={({ isActive }) =>
@@ -78,7 +81,7 @@ export const Sidebar: React.FC<{
 
         {!isMobile && (
           <div className={cn('m-3 rounded-xl border border-line bg-subtle p-2.5', narrow && 'border-0 bg-transparent p-0')}>
-            {!narrow && <div className="mb-2 flex items-center gap-1.5 text-2xs text-sidebar-ink-2"><CircleDot className="size-3 text-ok" /> Shift A · Live data</div>}
+            {!narrow && <div className="mb-2 flex items-center gap-1.5 text-2xs text-sidebar-ink-2"><CircleDot className="size-3 text-ink-3" /> {last ? `Imported data to ${last}` : 'No data imported yet'}</div>}
             <button
               onClick={onToggleCollapsed}
               className={cn('flex h-7 w-full items-center gap-2 rounded-md px-1 text-xs text-sidebar-ink-2 hover:bg-sidebar-hover hover:text-sidebar-ink', narrow && 'justify-center')}

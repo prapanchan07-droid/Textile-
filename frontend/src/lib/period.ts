@@ -1,18 +1,17 @@
 /**
- * One period vocabulary for the whole app. The backend endpoints grew different
- * spellings for the same window, so each API hook maps through here rather than
- * each page inventing its own options.
+ * Reporting periods. They are anchored on the latest date that has data (imported reports lag the calendar),
+ * so "Latest day" means the most recent production day in the database, not today.
  */
-export type Period = 'TODAY' | 'YESTERDAY' | 'LAST_7_DAYS' | 'THIS_MONTH';
+export type Period = 'latest' | '7d' | '30d' | 'month' | 'custom';
 
 export const PERIODS: { value: Period; label: string; short: string }[] = [
-  { value: 'TODAY', label: 'Today', short: 'Today' },
-  { value: 'YESTERDAY', label: 'Yesterday', short: 'Yesterday' },
-  { value: 'LAST_7_DAYS', label: 'Last 7 days', short: '7D' },
-  { value: 'THIS_MONTH', label: 'Month to date', short: 'MTD' },
+  { value: 'latest', label: 'Latest day', short: 'Day' },
+  { value: '7d', label: 'Last 7 days', short: '7D' },
+  { value: '30d', label: 'Last 30 days', short: '30D' },
+  { value: 'month', label: 'Month to date', short: 'MTD' },
+  { value: 'custom', label: 'Custom', short: 'Custom' },
 ];
 
 export const isPeriod = (v: string | null): v is Period => PERIODS.some((p) => p.value === v);
 
 export const periodLabel = (p: Period) => PERIODS.find((x) => x.value === p)?.label ?? p;
-

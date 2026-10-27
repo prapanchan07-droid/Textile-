@@ -19,6 +19,6 @@ def health_check():
             version=settings.VERSION,
             environment=settings.ENVIRONMENT,
             database=db_health,
-            active_module="MODULE_01 - Project Foundation"
+            active_module="Weaving operations platform"
         )
     )

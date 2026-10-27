@@ -3,7 +3,7 @@ Test setup.
 
 PostgreSQL tests need a DEDICATED test database: set TEST_DATABASE_URL to a PostgreSQL URL whose database
 name ends in `_test` (the suite drops and recreates that database's `public` schema). Without it those
-tests are skipped, and the pure-logic tests (calendar, statistics, formulas) still run. The suite never
+tests are skipped, and the pure-logic tests (parsers, metric formulas) still run. The suite never
 reads DATABASE_URL, so it cannot touch the application's data.
 """
 import os
@@ -20,6 +20,7 @@ os.environ["DATABASE_URL"] = TEST_URL or "sqlite://"
 os.environ["ENVIRONMENT"] = "development"
 os.environ["AUTO_MIGRATE"] = "true"
 os.environ["SEED_DEMO_USERS"] = "true"
+os.environ["BACKGROUND_JOBS_ENABLED"] = "false"
 
 from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.engine import make_url  # noqa: E402
@@ -68,17 +69,3 @@ def db(engine):
     with Session(engine) as session:
         yield session
         session.rollback()
-
-
-@pytest.fixture(scope="module")
-def seeded(engine):
-    """Demo data loaded once per module, at a fixed clock so results are repeatable."""
-    from tests.factories import FIXED_NOW
-    from app.weaving.seed.demo import seed_demo
-
-    truncate_all(engine)
-    with Session(engine) as session:
-        report = seed_demo(session, now=FIXED_NOW, days=21)
-        session.commit()
-    yield report
-    truncate_all(engine)

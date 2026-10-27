@@ -1,4 +1,6 @@
-import { Home, type LucideIcon } from 'lucide-react';
+import {
+  Activity, BellRing, ClipboardList, Cog, Cpu, FileText, GitCompareArrows, Gauge, PlugZap, UploadCloud, Users, Wind, Wrench, type LucideIcon,
+} from 'lucide-react';
 import type { AuthUser } from '../types/auth';
 
 export interface NavItem {
@@ -12,9 +14,33 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/** Add new pages here as they are built. */
+/** One role (ADMIN) today: everyone signed in sees every page. Role-based menus come back when roles are added. */
 export const buildNav = (user: AuthUser | null): NavGroup[] =>
-  user ? [{ label: 'Main', items: [{ to: '/', label: 'Home', icon: Home }] }] : [];
+  user
+    ? [
+        { label: 'Overview', items: [
+          { to: '/', label: 'Command centre', icon: Gauge },
+          { to: '/looms', label: 'Loom floor', icon: Cpu },
+        ] },
+        { label: 'Analysis', items: [
+          { to: '/production', label: 'Production & shifts', icon: Activity },
+          { to: '/compare', label: 'Compare machines', icon: GitCompareArrows },
+          { to: '/energy', label: 'Air & energy', icon: Wind },
+        ] },
+        { label: 'Action', items: [
+          { to: '/alerts', label: 'Alerts', icon: BellRing },
+          { to: '/tasks', label: 'Tasks', icon: ClipboardList },
+          { to: '/groups', label: 'Groups', icon: Users },
+          { to: '/maintenance', label: 'Maintenance', icon: Wrench },
+        ] },
+        { label: 'Reporting', items: [{ to: '/reports', label: 'Owner reports', icon: FileText }] },
+        { label: 'Data & setup', items: [
+          { to: '/imports', label: 'Data imports', icon: UploadCloud },
+          { to: '/connectivity', label: 'Connectivity', icon: PlugZap },
+          { to: '/settings', label: 'Targets & audit', icon: Cog },
+        ] },
+      ]
+    : [];
 
 export const findNav = (groups: NavGroup[], pathname: string) =>
   groups
