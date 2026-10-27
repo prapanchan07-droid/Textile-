@@ -11,11 +11,7 @@ from app.models.user import User
 DEMO_PASSWORD = "Ashok@2026"
 
 DEMO_USERS = [
-    ("owner", "Gokul Ashok", Role.OWNER),
-    ("manager", "Ramesh Kumar", Role.WEAVING_MANAGER),
-    ("supervisor", "Selvam P", Role.SHIFT_SUPERVISOR),
-    ("maintenance", "Karthik R", Role.MAINTENANCE),
-    ("quality", "Priya S", Role.QUALITY),
+    ("admin", "Administrator", Role.ADMIN),
 ]
 
 

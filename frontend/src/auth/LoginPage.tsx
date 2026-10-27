@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Eye, EyeOff, Lock, LogIn, ShieldCheck, Sparkles, TrendingUp, User, Wrench } from 'lucide-react';
-import { getData } from '../api/client';
+import { Eye, EyeOff, Lock, LogIn, Sparkles, TrendingUp, User, Wrench } from 'lucide-react';
 import { Button } from '../design/ui';
 import { AshokLogo } from '../layout/AshokLogo';
-import { landingPath } from '../features/weaving/sections';
-import type { DemoAccount } from '../types/auth';
 import { useAuth } from './AuthContext';
 
 const PITCH = [
@@ -27,22 +23,15 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const demo = useQuery({
-    queryKey: ['auth', 'demo-accounts'],
-    queryFn: () => getData<DemoAccount[]>('/auth/demo-accounts'),
-    staleTime: Infinity,
-    retry: false,
-  });
-
-  if (user) return <Navigate to={from && from !== '/login' ? from : landingPath(user)} replace />;
+  if (user) return <Navigate to={from && from !== '/login' ? from : '/'} replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
-      const u = await login(username.trim(), password);
-      navigate(from && from !== '/login' ? from : landingPath(u), { replace: true });
+      await login(username.trim(), password);
+      navigate(from && from !== '/login' ? from : '/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not sign in');
     } finally {
@@ -90,7 +79,7 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">Sign in</h2>
-          <p className="mt-1.5 text-sm text-ink-3">Use your mill account. You will land on the pages for your role.</p>
+          <p className="mt-1.5 text-sm text-ink-3">Use your mill account. </p>
 
           <form onSubmit={submit} className="mt-7 space-y-4" noValidate>
             <label className="block">
@@ -103,7 +92,7 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   autoComplete="username"
                   autoFocus
-                  placeholder="e.g. supervisor"
+                  placeholder="e.g. admin"
                 />
               </span>
             </label>
@@ -141,34 +130,6 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          {demo.data && demo.data.length > 0 && (
-            <section className="mt-8 rounded-2xl border border-line bg-surface p-4" aria-label="Demo accounts">
-              <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-ink-2">
-                <ShieldCheck className="size-4 text-ok" /> Demo accounts
-                <span className="font-normal text-ink-3">· tap one to fill the form</span>
-              </div>
-              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                {demo.data.map((a) => (
-                  <button
-                    key={a.username}
-                    type="button"
-                    onClick={() => {
-                      setUsername(a.username);
-                      setPassword('Ashok@2026');
-                      setError(null);
-                    }}
-                    className="rounded-lg border border-line px-3 py-2 text-left transition-colors hover:border-accent hover:bg-accent-soft"
-                  >
-                    <div className="text-sm font-medium text-ink">{a.role_label}</div>
-                    <div className="text-2xs text-ink-3">{a.username}</div>
-                  </button>
-                ))}
-              </div>
-              <p className="mt-3 text-2xs text-ink-3">
-                Shared demo password: <code className="rounded bg-muted px-1 py-0.5 font-mono">Ashok@2026</code>. Turned off in production.
-              </p>
-            </section>
-          )}
         </div>
       </main>
     </div>

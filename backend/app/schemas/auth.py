@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import BaseModel
 
 
@@ -13,7 +12,6 @@ class UserOut(BaseModel):
     full_name: str
     role: str
     role_label: str
-    sections: List[str]  # weaving sections this user may open; first is the landing page
 
 
 class LoginResponse(BaseModel):
@@ -21,10 +19,3 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     expires_in: int
     user: UserOut
-
-
-class DemoAccount(BaseModel):
-    username: str
-    role: str
-    role_label: str
-    full_name: str

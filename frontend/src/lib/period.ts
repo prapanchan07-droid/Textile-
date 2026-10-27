@@ -16,11 +16,3 @@ export const isPeriod = (v: string | null): v is Period => PERIODS.some((p) => p
 
 export const periodLabel = (p: Period) => PERIODS.find((x) => x.value === p)?.label ?? p;
 
-/** /overview and /decision-center use an enum with THIS_WEEK instead of LAST_7_DAYS. */
-export const toOverviewPeriod = (p: Period) => (p === 'LAST_7_DAYS' ? 'THIS_WEEK' : p);
-
-/** /overview compares against the equivalent previous window. */
-export const toComparison = (p: Period) => (p === 'LAST_7_DAYS' ? 'PREVIOUS_WEEK' : p === 'THIS_MONTH' ? 'PREVIOUS_MONTH' : 'PREVIOUS_DAY');
-
-export const comparisonLabel = (p: Period) =>
-  p === 'LAST_7_DAYS' ? 'previous 7 days' : p === 'THIS_MONTH' ? 'previous month' : 'previous day';

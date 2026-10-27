@@ -1,7 +1,5 @@
-export type Role = 'OWNER' | 'WEAVING_MANAGER' | 'SHIFT_SUPERVISOR' | 'MAINTENANCE' | 'QUALITY';
-
-export type WeavingSection =
-  | 'owner' | 'command' | 'cockpit' | 'maintenance' | 'quality' | 'production' | 'stoppages' | 'machines' | 'workforce' | 'handover' | 'orders' | 'scheduler' | 'insights' | 'compare' | 'actions';
+/** Only one role for now; more are added later. */
+export type Role = 'ADMIN';
 
 export interface AuthUser {
   id: string;
@@ -9,8 +7,6 @@ export interface AuthUser {
   full_name: string;
   role: Role;
   role_label: string;
-  /** Sections this user may open; the first is their landing page. */
-  sections: WeavingSection[];
 }
 
 export interface LoginResult {
@@ -18,11 +14,4 @@ export interface LoginResult {
   token_type: string;
   expires_in: number;
   user: AuthUser;
-}
-
-export interface DemoAccount {
-  username: string;
-  role: Role;
-  role_label: string;
-  full_name: string;
 }
